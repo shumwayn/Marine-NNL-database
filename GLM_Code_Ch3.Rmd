@@ -5,26 +5,20 @@ date: "19 August 2019"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+#Load packages
+```{r setup}
 
-##Load packages
 
 library("Hmisc")
 library("MASS")
 library("AER")
 library("ggplot2")
 
-## set wd
-
-setwd("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review")
-
-
 ```
 
 
-
-```{r}
-### Load Data ###
+##Load Data
+```{r }
 
 Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review/Policy_Analysis.csv")
 View(Policy_Analysis)
@@ -42,17 +36,10 @@ View(WGI_Analysis)
 ```
 
 
+#Correlation Matrix - ALL DATA
 
+```{r}
 
-
-
-
-
-
-
-##########################################
-##### Correlation Matrix - ALL DATA #####
-#########################################
 head(Policy_Analysis)
 Policy_data <- Policy_Analysis[,4:length(Policy_Analysis)] ## makes a new dataframe from policy analysis, subsets everything to the right of presence/absence
 View(Policy_data)
@@ -60,7 +47,18 @@ View(Policy_data)
 
 round(cor(Policy_data, use = "na.or.complete"),2) ##rounds the date two decimal places for clarity
 cor_matrix <- cor(Policy_data, use="pairwise.complete.obs", method = c("spearman"))   
-View(cor_matrix)                                        
+View(cor_matrix)
+
+
+
+```
+
+
+
+
+
+
+                                        
 
 
 ### Make Generalized linear model of all data against presence/absence of policy ####
