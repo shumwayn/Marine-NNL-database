@@ -27,7 +27,7 @@ View(Policy_Analysis)
 ##Policy_Analysis$Governance[Policy_Analysis$Governance == ""] <-NA
 ##View(Policy_Analysis)
 
-WGI_analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review/WGI_analysis.csv")
+#WGI_analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review/WGI_analysis.csv")
 ##View(WGI_Analysis)
 
 ##########################################
