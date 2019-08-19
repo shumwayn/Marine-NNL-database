@@ -269,13 +269,14 @@ library("scales")
 
 
 ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color=Policy_Analysis$Presence_Absence)) + 
-  geom_point(size = 3) +
+  geom_point(size = 1) +
+  geom_text(aes(label= COUNTRY), size = 2) +
   xlab("logGDP") +
   ylab("Polity 2 Score") +
   theme_classic() + xlim(20,31) +
   guides(color = guide_legend(title = "Policy Presence"))
-  #geom_hline(data = Policy_Analysis, aes(yintercept = as.numeric(0)), color= "red")) + # code for quartile not working
-  #geom_vline(data = Policy_Analysis, aes(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red")) #code for quartile not working
+  geom_hline(data = Policy_Analysis, aes(yintercept = as.numeric(0)), color= "red") + # code for quartile not working
+  geom_vline(data = Policy_Analysis, aes(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red")) #code for quartile not working
 ##+ panel.grid.major = element_line(colour = "firebrick", size = 4) - not working
 
 #geom_vline(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red"))
