@@ -268,9 +268,10 @@ library("scales")
 #Policy_Analysis$GDP = as.numeric(levels(Policy_Analysis$GDP))[Policy_Analysis$GDP]
 
 
-ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color=Policy_Analysis$Presence_Absence)) + 
-  geom_point(size = 1) +
-  geom_text(aes(label= COUNTRY), size = 2) +
+### POLITY 2 VS logGDP
+ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color=Presence_Absence)) + 
+  geom_point(size = .5) +
+  geom_text(aes(label= COUNTRY),size = 2.5) +
   xlab("logGDP") +
   ylab("Polity 2 Score") +
   theme_classic() + xlim(20,31) +
