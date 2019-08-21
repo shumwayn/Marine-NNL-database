@@ -245,7 +245,7 @@ library(RColorBrewer)
 #### Boxplot of Presence/Absence vs. Polity 2 - Y axis first then x (response)
 boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$Presence_Absence, data = Policy_Analysis, main = "Polity2 Index", xlab="Policy", ylab= "Polity2 score")
 
-boxplot(log(Policy_Analysis$GDP) ~ Polity_Analysis$Presence_Absence, data = Policy_Analysis, main = "Presence vs GDP", xlab="Presence", ylab= "log(GDP)")
+boxplot(log(Policy_Analysis$GDP) ~ Policy_Analysis$Presence_Absence, data = Policy_Analysis, main = "Presence vs GDP", xlab="Presence", ylab= "log(GDP)")
 
 boxplot(log(Policy_Analysis$EEZ_Protected) ~ Polity_Analysis$Presence_Absence, data = Policy_Analysis, main = "Presence vs EEZ", xlab="Presence", ylab= "log(EEZ)")
 
@@ -280,6 +280,24 @@ ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color=Presence_Absence))
   geom_vline(data = Policy_Analysis, aes(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red")) #code for quartile not working
 ##+ panel.grid.major = element_line(colour = "firebrick", size = 4) - not working
 
+### GDP vs Richness, with NRR as size and Stage as color
+  
+ggplot(data = Policy_Analysis, aes (x=log(Policy_Analysis$Richness), y = log(GDP), color = Policy_Analysis$STAGE2))+
+  geom_point(size = Policy_Analysis$Rents) +
+  geom_text(aes(label= COUNTRY),size = 2.5) +
+  xlab("Species Richness") +
+  ylab("logGDP")+
+  guides(color = guide_legend(title = "Policy Stage"))
+
+
+
+
+  
+  
+  
+  
+  
+  
 #geom_vline(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red"))
 
 #3d Scatter plot
