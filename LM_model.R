@@ -14,7 +14,7 @@ library("tidyverse")
 
 ## set wd
 
-setwd("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review")
+#setwd("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review")
 
 ### Load Data ###
 
@@ -122,8 +122,9 @@ summary(Capacity_Model)
 #datatest <- Policy_Analysis[-index,]
 
 
-
+##################################
 ## Build ordinal logistic regression model
+##################################
 
 ### Stage of Policy vs. ALL values ###
 
@@ -199,9 +200,8 @@ boxplot(Policy_Analysis$STAGE ~ Policy_Analysis$EEZ_Protected + Policy_Analysis$
 boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$STAGE, data = Policy_Analysis, id.n=TRUE, main = "Polity2 Index vs Stage", xlab="Stage", ylab= "Polity2 score")
 
 
-
+############
 ### GLM of OHI ### Why signigican in Policy model but not here?
-
 OHI_Model <- glm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$OHI, family = binomial, data = Polity_Analysis)
 summary (OHI_Model)
 plot(OHI_Model)
@@ -231,17 +231,37 @@ Int2 <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2*
 summary(Int2)
 interaction.plot(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, Policy_Analysis$Species_risk)
 
+
 ##################################################
-############Marine Specific Policies#############
+############Marine Policies############# none including organisational
 ##################################################
+
+## Marine Specific Policies ####
+
 SubN_Pol <- Policy_Analysis %>%   ## Subsets marine specific subnational policies
   filter(Mar_subN == 3)
-
 Nat_Pol <- Policy_Analysis %>%   ##subsets marine specific national policies
   filter(Mar_Nat ==3)
-
 Mar_Pol <- full_join(Nat_Pol, SubN_Pol)  #### joins the two together
 
+### Policies that are not marine specific, but include marine explicitly ####
+Sub_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+  filter(Mar_subN == 2)
+Nat_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+  filter(Mar_Nat == 2)
+
+Mar_Exp <- full_join(Sub_exp, Nat_exp)
+
+## Policies that include marine implicitly ###
+Sub_imp <-Policy_Analysis %>%   ## Subsets marine implicit subnational policies
+  filter(Mar_subN == 1)
+Nat_imp <-Policy_Analysis %>%   ## Subsets marine implicit subnational policies
+  filter(Mar_Nat == 1)
+Supr_imp <- Policy_Analysis %>%   ## Subsets marine implicit subnational policies
+  filter(Mar_supraN == 1)
+
+Mar_Imp <- full_join (Sub_imp, Nat_imp)
+Mar_Imp2 <- full_join (Mar_Imp, Supr_imp)
 
 
 ##################################################
