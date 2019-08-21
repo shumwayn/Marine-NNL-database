@@ -10,6 +10,7 @@ library("Hmisc")
 library("MASS")
 library("AER")
 library("ggplot2")
+library("tidyverse")
 
 ## set wd
 
@@ -230,6 +231,18 @@ Int2 <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2*
 summary(Int2)
 interaction.plot(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, Policy_Analysis$Species_risk)
 
+##################################################
+############Marine Specific Policies#############
+##################################################
+SubN_Pol <- Policy_Analysis %>%   ## Subsets marine specific subnational policies
+  filter(Mar_subN == 3)
+
+Nat_Pol <- Policy_Analysis %>%   ##subsets marine specific national policies
+  filter(Mar_Nat ==3)
+
+Mar_Pol <- full_join(Nat_Pol, SubN_Pol)  #### joins the two together
+
+
 
 ##################################################
           #########################
@@ -280,7 +293,10 @@ ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color=Presence_Absence))
   geom_vline(data = Policy_Analysis, aes(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red")) #code for quartile not working
 ##+ panel.grid.major = element_line(colour = "firebrick", size = 4) - not working
 
-### GDP vs Richness, with NRR as size and Stage as color
+###########################################################  
+### GDP vs Richness, with NRR as size and Stage as color ### 
+###########################################################  
+  
   
 ggplot(data = Policy_Analysis, aes (x=log(Policy_Analysis$Richness), y = log(GDP), color = Policy_Analysis$STAGE2))+
   geom_point(size = Policy_Analysis$Rents) +
@@ -288,7 +304,6 @@ ggplot(data = Policy_Analysis, aes (x=log(Policy_Analysis$Richness), y = log(GDP
   xlab("Species Richness") +
   ylab("logGDP")+
   guides(color = guide_legend(title = "Policy Stage"))
-
 
 
 
