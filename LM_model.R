@@ -11,6 +11,8 @@ library("MASS")
 library("AER")
 library("ggplot2")
 library("tidyverse")
+library(ggplot2)
+library(RColorBrewer)
 
 ## set wd
 
@@ -263,17 +265,40 @@ Supr_imp <- Policy_Analysis %>%   ## Subsets marine implicit subnational policie
 Mar_Imp <- full_join (Sub_imp, Nat_imp)
 Mar_Imp2 <- full_join (Mar_Imp, Supr_imp)
 
+Mar_Inc <- full_join(Mar_Imp2, Mar_Exp)  ### Includes marine considered explicitly and implicitly
 
+All_mar <- full_join(Mar_Inc, MarinePol)
 ##################################################
-          #########################
-                ### Plots ###
-          #########################
+#########################
+### Plots ###
+#########################
 ##################################################
 
 
-library(tidyverse)
-library(ggplot2)
-library(RColorBrewer)
+########Plot marine specific vs. non specific policies #################
+ggplot(data = Mar_Pol, aes (x=log(Richness), y = log(GDP), color = All_mar))+
+  geom_point(size = 2) +
+  geom_text(aes(label= COUNTRY),size = 2.5) +
+  xlab("Species Richness") +
+  ylab("logGDP")+
+  guides(color = guide_legend(title = "Policy Type"))
+
+ggplot(data = Policy_Analysis, aes (x=log(Richness), y = log(GDP), color = All_mar))+
+  geom_point(size = 2) +
+  geom_text(aes(label= COUNTRY),size = 2.5) +
+  xlab("Species Richness") +
+  ylab("logGDP")+
+  guides(color = guide_legend(title = "Policy Type"))
+
+ggplot(data = Policy_Analysis, aes (x=log(Richness), y = log(GDP), color = All_mar))+
+  geom_point(size = 2) +
+  geom_text(aes(label= COUNTRY),size = 2.5) +
+  xlab("Species Richness") +
+  ylab("logGDP")+
+  guides(color = guide_legend(title = "Policy Type"))
+
+
+
 
 #### Boxplot of Presence/Absence vs. Polity 2 - Y axis first then x (response)
 boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$Presence_Absence, data = Policy_Analysis, main = "Polity2 Index", xlab="Policy", ylab= "Polity2 score")
