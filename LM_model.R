@@ -267,7 +267,12 @@ Mar_Imp2 <- full_join (Mar_Imp, Supr_imp)
 
 Mar_Inc <- full_join(Mar_Imp2, Mar_Exp)  ### Includes marine considered explicitly and implicitly
 
-All_mar <- full_join(Mar_Inc, MarinePol)
+All_mar <- full_join(Mar_Inc, MarinePol) ## Include all marine policies, no matter how included
+
+## Policies that don't include marine at all
+
+No_mar <- Policy_Analysis %>%   ## Subsets no policies
+  filter(Presence_Absence == 0)
 
 ##################################################
 #########################
@@ -276,37 +281,46 @@ All_mar <- full_join(Mar_Inc, MarinePol)
 ##################################################
 
 
-########Plot marine specific vs. non specific policies #################
-ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
-  geom_point(size = 2, color = "blue") +
+########Plot marine specific policies vs OHI #################
+ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
+  
+  geom_point(data = Mar_Exp, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
+  
+  geom_point(data = Mar_Pol,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black", hjust =1, vjust = 1) +
+  
+  geom_point(data = Mar_Imp2, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
+  
+  geom_point(data = No_mar, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
+  
+  
+  xlab("Ocean Health Index") +
+  ylab("logGDP") +
+  
+
+  guides(color = guide_legend("Policy Type"), label = TRUE) +
+  theme_classic()
+          
+#--------------------------
+
+ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
+  geom_point(data = Mar_Pol,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
   geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
-  xlab("Species Richness") +
+  
+  geom_point(data = Mar_Imp2, aes(x=OHI, y = log(GDP)), size = 2, color = "pink") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
+  
+  geom_point(data = Mar_Exp, aes(x=OHI, y = log(GDP)), size = 2, color = "green") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
+  
+  geom_point(data = No_mar, aes(x=OHI, y = log(GDP)), size = 2, color = "black") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
+  
+  xlab("Ocean Health Index") +
   ylab("logGDP")+
-  xlim (0, .85) +
-  ylim (17,32) +
-  title(main = "Marine Specific Policies") +
-  guides(color = guide_legend(title = "Policy Type"))
-
-ggplot(data = Mar_Imp2, aes (x=Richness, y = log(GDP)))+
-  geom_point(size = 2, color = "yellow") +
-  geom_text(aes(label= COUNTRY),size = 2.5) +
-  xlab("Species Richness") +
-  ylab("logGDP")+
-  xlim (0, .85) +
-  ylim (17,32) +
-  title(main = "Marine Implicit Policies") +
-  guides(color = guide_legend(title = "Policy Type"))
-
-ggplot(data = Mar_Exp, aes (x=Richness, y = log(GDP)))+
-  geom_point(size = 2, color = "green") +
-  geom_text(aes(label= COUNTRY),size = 2.5) +
-  xlab("Species Richness") +
-  ylab("logGDP")+
-  xlim (0, .85) +
-  ylim (17,32) +
-  title(main = "Marine Explicit Policies") +
-  guides(color = guide_legend(title = "Policy Type"))
-
+  
+  guides(color = guide_legend(title = "Policy Type")) +
+  theme_classic()
 
 
 
