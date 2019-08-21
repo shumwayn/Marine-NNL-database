@@ -278,26 +278,32 @@ All_mar <- full_join(Mar_Inc, MarinePol)
 
 ########Plot marine specific vs. non specific policies #################
 ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
-  geom_point(size = 2) +
-  geom_text(aes(label= COUNTRY),size = 2.5) +
+  geom_point(size = 2, color = "blue") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
   xlab("Species Richness") +
   ylab("logGDP")+
+  xlim (0, .85) +
+  ylim (17,32) +
   title(main = "Marine Specific Policies") +
   guides(color = guide_legend(title = "Policy Type"))
 
-ggplot(data = Mar_Imp2, aes (x=log(Richness), y = log(GDP)))+
-  geom_point(size = 2) +
+ggplot(data = Mar_Imp2, aes (x=Richness, y = log(GDP)))+
+  geom_point(size = 2, color = "yellow") +
   geom_text(aes(label= COUNTRY),size = 2.5) +
   xlab("Species Richness") +
   ylab("logGDP")+
+  xlim (0, .85) +
+  ylim (17,32) +
   title(main = "Marine Implicit Policies") +
   guides(color = guide_legend(title = "Policy Type"))
 
-ggplot(data = Mar_Exp, aes (x=log(Richness), y = log(GDP)))+
-  geom_point(size = 2) +
+ggplot(data = Mar_Exp, aes (x=Richness, y = log(GDP)))+
+  geom_point(size = 2, color = "green") +
   geom_text(aes(label= COUNTRY),size = 2.5) +
   xlab("Species Richness") +
   ylab("logGDP")+
+  xlim (0, .85) +
+  ylim (17,32) +
   title(main = "Marine Explicit Policies") +
   guides(color = guide_legend(title = "Policy Type"))
 
