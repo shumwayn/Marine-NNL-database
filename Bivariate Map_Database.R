@@ -4,7 +4,7 @@
 #       
 # ---------------------------------------------------------------------------
 # bivariate.map.r
-# Created by: Modified by: Carla Archibald
+# Created by: Modified by: Nicki Shumway 22/08/19
 #   http://rfunctions.blogspot.com/2015/03/bivariate-maps-bivariatemap-function.html
 # Description: This R scipt which maos spatial data against eachother to create a bivarioute map 
 # ---------------------------------------------------------------------------
