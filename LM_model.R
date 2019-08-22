@@ -286,19 +286,26 @@ ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
   
   geom_point(data = Mar_Exp, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
   
-  geom_point(data = Mar_Pol,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
-  geom_text(aes(label= COUNTRY),size = 2.5, color="black", hjust =1, vjust = 1) +
   
   geom_point(data = Mar_Imp2, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
   
   geom_point(data = No_mar, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
   
+  geom_point(data = Mar_Pol,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black", hjust =1, vjust = .5) +
+ 
+  
   
   xlab("Ocean Health Index") +
   ylab("logGDP") +
   
+  scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
+                     values = c("green", "red", "grey50", "blue")) +
+  guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))
+      
+  
 
-  guides(color = guide_legend("Policy Type"), label = TRUE) +
+  #guides(color = guide_legend("Policy Type"), label = TRUE) +
   theme_classic()
           
 #--------------------------
