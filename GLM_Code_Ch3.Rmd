@@ -3,6 +3,8 @@ title: "GLM NNL Database"
 author: "Nicole Shumway"
 date: "19 August 2019"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 #Load packages
@@ -20,17 +22,10 @@ library("ggplot2")
 ##Load Data
 ```{r }
 
-Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review/Policy_Analysis.csv")
-View(Policy_Analysis)
-
-All_data <- read.csv("C:\Users\uqnshumw\OneDrive - The University of Queensland\PhD Research\Ch. 1a Marine NNL Policy Review\Policy_Analysis.csv")
-View(All_data)
+Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
 
 
-Policy_Analysis$Governance[Policy_Analysis$Governance == ""] <-NA
-View(Policy_Analysis)
-
-WGI_analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review/WGI_analysis.csv")
+#WGI_analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review/WGI_analysis.csv")
 View(WGI_Analysis)
 
 ```
@@ -54,20 +49,20 @@ View(cor_matrix)
 ```
 
 
-
-
-
-
-                                        
-
-
 ### Make Generalized linear model of all data against presence/absence of policy ####
+
+```{r}
 
 All_Model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Richness + Policy_Analysis$mam_bird + Policy_Analysis$EEZ_Protected
                     + Policy_Analysis$Polity2 + Policy_Analysis$GDP +Policy_Analysis$ + Policy_Analysis$Rents + Policy_Analysis$OHI, family = "binomial", data = Policy_Analysis)
 summary(All_Model)
 
 #plot(All_Model)
+```
+
+
+
+```{r}
 
 
 #####################################
@@ -93,7 +88,10 @@ Biodiversity_model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Ric
 summary(Biodiversity_model)
 
 
+```
 
+
+```{r}
 
 #####################################
 #####SOCIO-POLITICAL VALUES##########
@@ -110,7 +108,14 @@ summary(Policy_model)
 Capacity_Model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2 + log(Policy_Analysis$GDP), family = "binomial", data = Policy_Analysis)
 summary(Capacity_Model)
 
+```
+
+
+```{r}
+
+
 ######WGI VARIABLES #########
+
 ### GLM of Response to World Governance Indicators ##
 #WGI_model <- glm(WGI_Analysis$Presence_Absence ~ WGI_Analysis$Control.of.Corruption + WGI_Analysis$Government.Effectiveness + WGI_Analysis$Political.Stability.Absense.of.Violence + WGI_Analysis$Regulatory.Quality + WGI_Analysis$Rule.of.Law + WGI_Analysis$Voice.Accountability, family = "binomial", data = WGI_Analysis)
 #summary(WGI_model)
@@ -124,11 +129,13 @@ summary(Capacity_Model)
 #summary(WGI_Stage) 
 #coeftest(WGI_Stage)
 
-################################################################
-################################
-###Ordinal Logist Regression#### To describe or predict variables. OLR can id which variables predict the level 
-################################ of involvement in offsets policy
-################################################################
+```
+
+
+#Ordinal Logistic Regression
+```{r}
+
+#To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
 
 #Dividing data into training and test set
 #Random sampling
@@ -143,6 +150,7 @@ summary(Capacity_Model)
 ## Build ordinal logistic regression model
 
 ### Stage of Policy vs. ALL values ###
+
 
 Policy_Analysis$STAGE2 = factor(Policy_Analysis$STAGE2, levels = c("0", "1", "2", "3", "4") )
 
@@ -166,12 +174,13 @@ mean(as.character(Policy_Analysis$STAGE2) !=
        as.character(predictstage))
 
 
+```
 
 
 
-##############################################
-### Stage of Policy vs.  politcal values ###
-##############################################
+##Stage of Policy vs Poltical values
+```{r}
+
 
 #For predicting
 #Dividing data into training and test set
@@ -199,23 +208,36 @@ coeftest(Policy_Stage)
 #mean(as.character(Policy_Analysis$STAGE2) != as.character(predictstage2))
 
 
+```
 
-#################
 
-#Plotting the effects ## this isn't working - getting log(GDP) predictor is not in the model?
+##Plotting the effects
+```{r}
+
+## this isn't working - getting log(GDP) predictor is not in the model?
 library("effects")
 Effect(focal.predictors = "log(GDP)",Policy_Stage)
 plot(Effect(focal.predictors = "log(GDP)",Policy_Stage))
 plot(Effect(focal.predictors = c("log(GDP)", "Polity2)",Policy_Stage)))
 
 ###
+
+
+```
+
+
+##Plot
+```{r}
+
 boxplot(Policy_Analysis$STAGE ~ Policy_Analysis$EEZ_Protected + Policy_Analysis$Polity2 + Policy_Analysis$GDP + Policy_Analysis$OHI, data = Policy_Analysis, main = "Stage vs Variables", xlab="Variables", ylab= "Stage")
+
+boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$STAGE, data = Policy_Analysis, id.n=TRUE, main = "Polity2 Index vs Stage", xlab="Stage", ylab= "Polity2 score")
+```
 
 
 ##plot
-boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$STAGE, data = Policy_Analysis, id.n=TRUE, main = "Polity2 Index vs Stage", xlab="Stage", ylab= "Polity2 score")
 
-
+```{r}
 
 ### GLM of OHI ### Why signigican in Policy model but not here?
 
@@ -248,18 +270,22 @@ Int2 <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2*
 summary(Int2)
 interaction.plot(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, Policy_Analysis$Species_risk)
 
+```
 
-##################################################
-          #########################
-                ### Plots ###
-          #########################
-##################################################
 
+
+#Plots
+##Load packages
+```{r}
 
 library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
 
+```
+
+
+```{r}
 #### Boxplot of Presence/Absence vs. Polity 2 - Y axis first then x (response)
 boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$Presence_Absence, data = Policy_Analysis, main = "Polity2 Index", xlab="Policy", ylab= "Polity2 score")
 
@@ -303,3 +329,8 @@ ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color=Policy_Analysis$Pr
 library(scatterplot3d)
 attach(Policy_Analysis)
 scatterplot3d(Policy_Analysis$STAGE, Policy_Analysis$GDP, Policy_Analysis$Polity2, main = "3D Scatterplot")
+
+
+```
+
+
