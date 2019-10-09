@@ -247,12 +247,12 @@ All_marine <- full_join(marine_inclusive, marine_specific) ## Include all marine
 No_mar <- Policy_Analysis %>%   ## Subsets no policies
   filter(Presence_Absence == 0)
 
-##################################################
-#########################
-### Plots ###
-#########################
-##################################################
 
+```
+
+
+#Plotting
+```{r}
 
 ########Plot marine specific policies vs OHI #################
 ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
@@ -302,7 +302,6 @@ ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
   
   guides(color = guide_legend(title = "Policy Type")) +
   theme_classic()
-
 
 
 
