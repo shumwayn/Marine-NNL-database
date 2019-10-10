@@ -244,9 +244,35 @@ marine_inclusive <- full_join(marine_implicit, marine_explicit)  ### Includes ma
 All_marine <- full_join(marine_inclusive, marine_specific) ## Include all marine policies, no matter how included
 
 ## Policies that don't include marine at all
-No_mar <- Policy_Analysis %>%   ## Subsets no policies
+No_marine <- Policy_Analysis %>%   ## Subsets no policies
   filter(Presence_Absence == 0)
 
+
+```
+
+#Marine Policies from offsets database
+```{r}
+#load data
+offsets_db <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Offsets by country.csv", comment.char="#")
+
+
+#Filter db by marine specific policies
+specific <- offsets_db %>% 
+  filter(Marine.Specific == "Yes")
+
+#filter by marine specific and marine explicit - these are truly all of the marine offset policies
+specific_explicit <- offsets_db %>% 
+  filter(Marine.Specific == "Yes") %>% 
+  filter(Implicit_Explicit == "Explicit")
+
+```
+
+
+
+#Summary stats 
+```{r}
+
+#GLMs of marine specific/explicit/implicit policies
 
 ```
 
