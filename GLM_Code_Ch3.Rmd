@@ -260,11 +260,22 @@ offsets_db <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queenslan
 specific <- offsets_db %>% 
   filter(Marine.Specific == "Yes")
 
-#filter by marine specific and marine explicit - these are truly all of the marine offset policies
+#filter by marine explicit (this actually includes marine specific)
 specific_explicit <- offsets_db %>% 
-  filter(Marine.Specific == "Yes") %>% 
   filter(Implicit_Explicit == "Explicit")
 
+implicit <- offsets_db %>% 
+  filter(Implicit_Explicit == "Implicit")
+
+##group implicit to all explicit policies - this gives you 90 policies
+ALL <- offsets_db %>% 
+  filter(Implicit_Explicit == "Explicit"| Implicit_Explicit == "Implicit")
+
+
+All_country <- offsets_db %>% 
+ filter(Implicit_Explicit == "Explicit"| Implicit_Explicit == "Implicit")
+  
+  
 ```
 
 
