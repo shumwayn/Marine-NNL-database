@@ -300,7 +300,7 @@ library(caret)
 library(nnet)
 
 
-#Prepare the data (All data)
+#Prepare the data - subsest policy analysis data into just the variables you want in the regression
 
 Var_subset <- Policy_Analysis %>% 
  select(marine_mech, Richness, EEZ_Protected, OHI, mam_bird, Polity2, Rents, GDP)
