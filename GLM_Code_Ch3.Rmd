@@ -260,21 +260,28 @@ offsets_db <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queenslan
 specific <- offsets_db %>% 
   filter(Marine.Specific == "Yes")
 
-#filter by marine explicit (this actually includes marine specific)
+#filter by marine explicit (this actually includes marine specific (n=55 policies)
 specific_explicit <- offsets_db %>% 
   filter(Implicit_Explicit == "Explicit")
 
+##subsets distinct countries - n=42 countries have policies that explicitly consider marine environments in their offset policy
+by_country1 <- specific_explicit %>% 
+  distinct(Country, .keep_all = FALSE) 
+
+#------------------
+##Implicit policies
 implicit <- offsets_db %>% 
   filter(Implicit_Explicit == "Implicit")
 
-##group implicit to all explicit policies - this gives you 90 policies
+##group implicit to all explicit policies - this gives you 90 policies, how many countries though?
 ALL <- offsets_db %>% 
   filter(Implicit_Explicit == "Explicit"| Implicit_Explicit == "Implicit")
 
+# this subsets by the number of disctinct countries n=71 (added one)
+by_country2 <- ALL %>% 
+  distinct(Country, .keep_all = FALSE) 
 
-All_country <- offsets_db %>% 
- filter(Implicit_Explicit == "Explicit"| Implicit_Explicit == "Implicit")
-  
+
   
 ```
 
