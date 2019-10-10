@@ -211,41 +211,46 @@ coeftest(Policy_Stage)
 ```{r}
 
 ## Marine Specific Policies ####
-SubN_Pol <- Policy_Analysis %>%   ## Subsets marine specific subnational policies
+#SubN_Pol <- Policy_Analysis %>%   ## Subsets marine specific subnational policies
   filter(Mar_subN == 3)
-Nat_Pol <- Policy_Analysis %>%   ##subsets marine specific national policies
+#Nat_Pol <- Policy_Analysis %>%   ##subsets marine specific national policies
   filter(Mar_Nat ==3)
-marine_specific <- full_join(Nat_Pol, SubN_Pol)  #### joins the two together, all marine specific policies
+
+  #marine_specific <- full_join(Nat_Pol, SubN_Pol)  #### joins the two together, all marine specific policies
 
 
 ### Policies that are not marine specific, but include marine explicitly ####
-Sub_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+#Sub_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
   filter(Mar_subN == 2)
-Nat_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+#Nat_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
   filter(Mar_Nat == 2)
+#marine_explicit <- full_join(Sub_exp, Nat_exp)
 
-marine_explicit <- full_join(Sub_exp, Nat_exp)
 
 ## Policies that include marine implicitly ###
-Sub_imp <-Policy_Analysis %>%   ## Subsets marine implicit subnational policies
-  filter(Mar_subN == 1)
-Nat_imp <-Policy_Analysis %>%   ## Subsets marine implicit national policies
-  filter(Mar_Nat == 1)
-Supr_imp <- Policy_Analysis %>%   ## Subsets marine implicit supra-national policies
-  filter(Mar_supraN == 1)
 
-Mar_Imp <- full_join (Sub_imp, Nat_imp)
-marine_implicit <- full_join (Mar_Imp, Supr_imp)  ##all marine implicit policies
+#marine_implicit <- Policy_Analysis %>% 
+  #filter(Mar_subN == 1 | Mar_Nat == 1 |Mar_supraN == 1 | Mar_org == 1)
 
-as.factor(MarinePol$STAGE2)
+#Sub_imp <-Policy_Analysis %>%   ## Subsets marine implicit subnational policies
+#  filter(Mar_subN == 1 )
+#Nat_imp <-Policy_Analysis %>%   ## Subsets marine implicit national policies
+#  filter(Mar_Nat == 1)
+#Supr_imp <- Policy_Analysis %>%   ## Subsets marine implicit supra-national policies
+# filter(Mar_supraN == 1)
+#Mar_Imp <- full_join (Sub_imp, Nat_imp)
+#marine_implicit2 <- full_join (Mar_Imp, Supr_imp)  ##all marine implicit policies
 
-marine_inclusive <- full_join(marine_implicit, marine_explicit)  ### Includes marine considered explicitly and implicitly
 
-All_marine <- full_join(marine_inclusive, marine_specific) ## Include all marine policies, no matter how included
+#as.factor(MarinePol$STAGE2)
+
+#marine_inclusive <- full_join(marine_specific, marine_explicit)  ### Includes marine considered explicitly and implicitly
+
+#All_marine <- full_join(marine_inclusive, marine_specific) ## Include all marine policies, no matter how included
 
 ## Policies that don't include marine at all
-No_marine <- Policy_Analysis %>%   ## Subsets no policies
-  filter(Presence_Absence == 0)
+#No_marine <- Policy_Analysis %>%   ## Subsets no policies
+  #filter(Presence_Absence == 0)
 
 
 ```
@@ -281,16 +286,49 @@ ALL <- offsets_db %>%
 by_country2 <- ALL %>% 
   distinct(Country, .keep_all = FALSE) 
 
-
-  
 ```
 
 
 
-#Summary stats 
+#Summary stats for marine policies using multinomial logist regression
 ```{r}
 
-#GLMs of marine specific/explicit/implicit policies
+#install.packages("caret")
+
+
+library(caret)
+library(nnet)
+
+
+#Prepare the data (All data)
+
+Var_subset <- Policy_Analysis %>% 
+ select(marine_mech, Richness, EEZ_Protected, OHI, mam_bird, Polity2, Rents, GDP)
+
+##inspect the data, this gives you 3 rows
+sample_n(Var_subset, 3)
+
+#split the data into training and test set
+set.seed(123)
+training.samples <- Var_subset$marine_mech %>% 
+  createDataPartition (p=0.8, list = FALSE)
+train.data <- Var_subset[training.samples, ]
+test.data <- Var_subset[-training.samples, ]
+
+##Computing multinomial logistic regression
+
+#Fit the model
+model <- nnet::multinom(Var_subset$marine_mech ~., data = Var_subset)
+
+summary(model)
+
+# Make predictions
+predicted.classes <- model %>% 
+  predict(test.data)
+head(predicted.classes)
+
+#Model accuracy
+mean(predicted.classes == test.data$marine_mech)
 
 ```
 
