@@ -330,10 +330,16 @@ head(predicted.classes)
 #Model accuracy
 mean(predicted.classes == test.data$marine_mech)
 
+##Not sure this is the right test or my data is quite right - not really levels of policy but is it ordinal not nominal?
+
+##subset the variable based just o
+
 ```
 
 
 #Plotting
+
+## Marine Specific vs OHI
 ```{r}
 
 ########Plot marine specific policies vs OHI #################
@@ -365,7 +371,6 @@ ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
   theme_classic()
           
 
-
 ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
   geom_point(data = Mar_Pol,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
   geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
@@ -386,6 +391,58 @@ ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
   theme_classic()
 
 
+
+```
+
+#Plot marine specific vs species Richness
+```{r}
+########Plot marine specific policies vs Richness ################# edited colors so marine explicit and specific are both blue
+ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
+  
+  geom_point(data = Mar_Exp, aes(x=Richness, y = log(GDP)), size = 2, shape = 19, color = "blue") +
+  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+  
+  geom_point(data = Mar_Imp2, aes(x=Richness, y = log(GDP)), size = 2, color = "red") +
+  
+  geom_point(data = No_mar, aes(x=Richness, y = log(GDP)), size = 2, color = "grey50") +
+  
+  geom_point(data = Mar_Pol,aes(x=Richness, y = log(GDP)), size = 2, color = "blue") +
+  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+ 
+  
+  
+  xlab(" Species Richness") +
+  ylab("logGDP") +
+  
+  scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
+                     values = c("green", "red", "grey50", "blue")) +
+  guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
+  legend.title()
+      
+  
+
+  #guides(color = guide_legend("Policy Type"), label = TRUE) +
+  theme_classic()
+          
+
+ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
+  geom_point(data = Mar_Pol,aes(x=Richness, y = log(GDP)), size = 2, color = "blue") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
+  
+  geom_point(data = Mar_Imp2, aes(x=Richness, y = log(GDP)), size = 2, color = "pink") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
+  
+  geom_point(data = Mar_Exp, aes(x=Richness, y = log(GDP)), size = 2, color = "blue") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
+  
+  geom_point(data = No_mar, aes(x=Richness, y = log(GDP)), size = 2, color = "black") +
+  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
+  
+  xlab("Richness") +
+  ylab("logGDP")+
+  
+  guides(color = guide_legend(title = "Policy Type")) +
+  theme_classic()
 
 ```
 
