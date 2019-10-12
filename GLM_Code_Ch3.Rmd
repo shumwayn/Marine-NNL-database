@@ -54,8 +54,9 @@ View(cor_matrix)
 
 ```{r}
 
-All_Model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Richness + Policy_Analysis$mam_bird + Policy_Analysis$EEZ_Protected
-                    + Policy_Analysis$Polity2 + Policy_Analysis$GDP +Policy_Analysis$ + Policy_Analysis$Rents + Policy_Analysis$OHI, family = "binomial", data = Policy_Analysis)
+All_Model <- glm(Presence_Absence ~ Richness + mam_bird + EEZ_Protected
+                    + Polity2 + GDP + Rents + OHI, 
+                 family = "binomial", data = Policy_Analysis)
 summary(All_Model)
 
 #plot(All_Model)
@@ -320,7 +321,13 @@ test.data <- Var_subset[-training.samples, ]
 #Fit the model
 model <- nnet::multinom(Var_subset$marine_mech ~., data = Var_subset)
 
-summary(model)
+summary(model) #odds ratio, probability of being in category 1 compared to category 0, neg means theres more probably of being in the reference group (no policy), than the variable
+
+# to get p values
+z <- summary(model)$coefficients/summary(model)$standard.errors
+p <- (1-pnorm(abs(z), 0, 1))*2
+coeftest(model)
+
 
 # Make predictions
 predicted.classes <- model %>% 
@@ -332,9 +339,27 @@ mean(predicted.classes == test.data$marine_mech)
 
 ##Not sure this is the right test or my data is quite right - not really levels of policy but is it ordinal not nominal?
 
-##subset the variable based just o
+#getting rid of zeros so just comparing within 'marine policies'
+all_policies<-filter(Var_subset, marine_mech != 0) #!= means "not equal to"
+model2 <- nnet::multinom(marine_mech ~., data = all_policies)
+summary(model2)
+coeftest(model2)
+
+
+some_policies<-filter(Var_subset, marine_mech == 2 | marine_mech ==3) #!= means "not equal to"
+model3 <- nnet::multinom(marine_mech ~., data = some_policies)
+summary(model3)
+coeftest(model3)
+```
+
+```{r}
+#T-test for presence absence vs all variables (Indep == Policy)
+
+#Then do ANOVA for 3 policy mechanisms
+
 
 ```
+
 
 
 #Plotting
@@ -441,6 +466,7 @@ ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
   xlab("Richness") +
   ylab("logGDP")+
   
+  ##key not working
   guides(color = guide_legend(title = "Policy Type")) +
   theme_classic()
 
