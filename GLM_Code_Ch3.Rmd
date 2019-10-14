@@ -366,33 +366,12 @@ t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$GDP, p.adjust.method = 
 t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, p.adjust.method = "none")
 t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Rents, p.adjust.method = "none")
 
-#Then do ANOVA for 3 policy mechanisms
 
 #Anova Code
 
-levels(Var_subset$marine_mech)
-
-# Compute the analysis of variance
-richness <- aov(marine_mech ~ Richness, data = Var_subset)
-EEZ <- aov(marine_mech ~ EEZ_Protected, data = Var_subset)
-threat <- aov(marine_mech ~ mam_bird, data = Var_subset)
-ocean_health <- aov(marine_mech ~ OHI, data = Var_subset)
-gdp <- aov(marine_mech ~ GDP, data = Var_subset)
-rents <- aov(marine_mech ~ Rents, data = Var_subset)
-Polity <- aov(marine_mech ~ Polity2, data = Var_subset)
-
-# Summary of the analysis
-summary(richness)
-summary(EEZ)
-summary(threat)
-summary(ocean_health)
-summary(gdp)
-summary(rents)
-summary(Polity)
-
-
 All_aov <- aov(marine_mech ~ Polity2 + GDP + OHI + Rents + EEZ_Protected + Richness + mam_bird, data = Var_subset)
 summary(All_aov)
+
 
 #Tukey Test
 summary(aov(marine_mech ~ as.factor(Polity2), Var_subset))
@@ -404,11 +383,6 @@ TukeyHSD(aov(marine_mech ~ as.factor(GDP), Var_subset))
 summary(aov(marine_mech ~ as.factor(OHI), Var_subset))
 TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
 ```
-
-
-
-```
-
 
 
 #Plotting
