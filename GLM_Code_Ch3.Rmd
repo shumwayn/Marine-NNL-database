@@ -380,22 +380,17 @@ coeftest(model3)
 ```
 
 
-#Analysis of Variance
+#Presence Absence AOV and T-test
 ```{r}
+
+Presence_aov <- aov(Presence_Absence ~ Polity2 + GDP + OHI + Rents + EEZ_Protected + Richness + mam_bird, data = Policy_Analysis)
+summary(Presence_aov)
+
 #T-test for presence absence vs all variables (Indep == Policy)
 
-require(graphics)
-t.test(EEZ_Protected ~ Presence_Absence, data = Policy_Analysis)
-with(Policy_Analysis, t.test(EEZ_Protected[Presence_Absence==1], EEZ_Protected[Presence_Absence==2]))
 
-t.test(mam_bird ~ Presence_Absence, data = Policy_Analysis)
-t.test(OHI ~ Presence_Absence, data = Policy_Analysis)
-t.test(GDP ~ Presence_Absence, data = Policy_Analysis)
-t.test(Polity2 ~ Presence_Absence, data = Policy_Analysis)
-t.test(Rents ~ Presence_Absence, data = Policy_Analysis)
-
-   
-
+t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$mam_bird)
+t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Richness)
 t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$EEZ_Protected)
 t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$OHI)
 t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$GDP)
@@ -403,11 +398,14 @@ t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2)
 t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Rents)
 
 
-#Anova Code
+```
+
+#Marine mechanism AOV and T-test
+```{r}
+
 
 All_aov <- aov(marine_mech ~ Polity2 + GDP + OHI + Rents + EEZ_Protected + Richness + mam_bird, data = Var_subset)
 summary(All_aov)
-
 
 #Tukey Test
 summary(aov(marine_mech ~ as.factor(Polity2), Var_subset))
