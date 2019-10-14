@@ -11,11 +11,13 @@ editor_options:
 ```{r setup}
 
 
-library("Hmisc")
-library("MASS")
-library("AER")
-library("ggplot2")
-library("dplyr")
+library(Hmisc)
+library(MASS)
+library(AER)
+library(ggplot2)
+library(tidyverse)
+library(RColorBrewer)
+library(effects)
 
 ```
 
@@ -291,6 +293,30 @@ by_country2 <- ALL %>%
 ```
 
 
+#Summary stats for marine policies as tables
+
+```{r}
+
+ggplot(Policy_Analysis, aes(x = marine_mech)) +
+  geom_bar(stat = 'count') +
+  theme(axis.text.x = element_text(angle = 45, size = 7.5, hjust = 1)) +
+  xlab("Policy Type") +
+  ylab("Number of countries") +
+  labs(fill = "Mine Type")+
+  facet_wrap(~, labeller = as_labeller(marine_names))
+  
+
+#Makes a vector with mine type names
+marine_names <- c('0' = "No policy",
+                 '1' = "Marine implicit",
+                 '2' = "Marine explicit",
+                 '3' = "Marine specific") 
+
+grid.table(for_table)
+
+```
+
+
 
 #Summary stats for marine policies using multinomial logist regression
 ```{r}
@@ -353,18 +379,28 @@ summary(model3)
 coeftest(model3)
 ```
 
+
+#Analysis of Variance
 ```{r}
 #T-test for presence absence vs all variables (Indep == Policy)
 
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Richness, p.adjust.method = "none")
+require(graphics)
+t.test(EEZ_Protected ~ Presence_Absence, data = Policy_Analysis)
+with(Policy_Analysis, t.test(EEZ_Protected[Presence_Absence==1], EEZ_Protected[Presence_Absence==2]))
 
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$EEZ_Protected, p.adjust.method = "none")
+t.test(mam_bird ~ Presence_Absence, data = Policy_Analysis)
+t.test(OHI ~ Presence_Absence, data = Policy_Analysis)
+t.test(GDP ~ Presence_Absence, data = Policy_Analysis)
+t.test(Polity2 ~ Presence_Absence, data = Policy_Analysis)
+t.test(Rents ~ Presence_Absence, data = Policy_Analysis)
 
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$mam_bird, p.adjust.method = "none")
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$OHI, p.adjust.method = "none")
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$GDP, p.adjust.method = "none")
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, p.adjust.method = "none")
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Rents, p.adjust.method = "none")
+   
+
+t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$EEZ_Protected)
+t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$OHI)
+t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$GDP)
+t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2)
+t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Rents)
 
 
 #Anova Code
@@ -411,12 +447,12 @@ ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
   scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
                      values = c("green", "red", "grey50", "blue")) +
   guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
-  legend.title
-      
+  theme_minimal()
+
   
 
   #guides(color = guide_legend("Policy Type"), label = TRUE) +
-  theme_classic()
+  #theme_classic()
           
 
 ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
@@ -465,13 +501,8 @@ ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
   scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
                      values = c("green", "red", "grey50", "blue")) +
   guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
-  legend.title()
-      
-  
+  theme_minimal()
 
-  #guides(color = guide_legend("Policy Type"), label = TRUE) +
-  theme_classic()
-          
 
 ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
   geom_point(data = Mar_Pol,aes(x=Richness, y = log(GDP)), size = 2, color = "blue") +
@@ -563,10 +594,7 @@ interaction.plot(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, Poli
 ##Load packages
 ```{r}
 
-library(tidyverse)
-library(ggplot2)
-library(RColorBrewer)
-library(effects)
+
 
 ```
 
@@ -626,16 +654,20 @@ grid(2,2)
 library("ggplot2")
 library("scales")
 
+
+
 #Policy_Analysis$GDP = as.numeric(levels(Policy_Analysis$GDP))[Policy_Analysis$GDP]
 
+Policy_Analysis$Presence_Absence<-as.factor(Policy_Analysis$Presence_Absence) #force group to be a factor
+Policy_Analysis$GDP <-as.integer(Policy_Analysis$GDP)
 
-ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color=Policy_Analysis$Presence_Absence)) + 
+ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color = Policy_Analysis$Presence_Absence)) + 
   geom_point(size = 3) +
   xlab("logGDP") +
   ylab("Polity 2 Score") +
-  theme_classic() + xlim(20,31) +
+  theme_minimal() + xlim(20,31) +
   guides(color = guide_legend(title = "Policy Presence")) +
-  geom_hline(data = Policy_Analysis, aes(yintercept = as.numeric(0)), color= "red") +
+  geom_hline(data = Policy_Analysis, aes(yintercept = as.numeric(0)), color= "gray") +
   geom_vline(data = Policy_Analysis, aes(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red")) #code for quartile not working
 ##+ panel.grid.major = element_line(colour = "firebrick", size = 4) - not working
 
