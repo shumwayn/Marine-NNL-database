@@ -386,7 +386,7 @@ TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
 ########Plot marine specific policies vs OHI #################
 ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP)))+
   geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
-  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
+  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
   geom_point(data = implicit, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
   geom_point(data = none, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
   geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
@@ -403,14 +403,17 @@ ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP)))+
 ## Polity 2 vs GDP
   
 ggplot(data = Policy_Analysis, aes (x=log(GDP), y = Polity2))+
-  geom_point(data = explicit, aes(x=log(GDP), y = Polity2), size = 2, shape = 19, color = "green") +
-  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
+  geom_point(data = specific, aes(x=log(GDP), y = Polity2), size = 2, shape = 19, color = "green") +
+  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =-.08, vjust = -1)+
   geom_point(data = implicit, aes (x=log(GDP), y = Polity2), size = 2, color = "red")+ 
   geom_point(data = none, aes(x=log(GDP), y = Polity2), size = 2, color = "grey50") +
-  geom_point(data = specific, aes(x=log(GDP), y = Polity2), size = 2, color = "blue") 
+  geom_point(data = explicit, aes(x=log(GDP), y = Polity2), size = 2, color = "blue")+
   #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
   xlab("logGDP") +
   ylab("Polity2") +
+  xlim (20,31.5)+
+  geom_hline (yintercept = 0, color = "black") +
+  geom_vline(xintercept = 26, color = "black") +
   
   scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
                      values = c("green", "red", "grey50", "blue")) +
