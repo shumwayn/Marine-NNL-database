@@ -215,35 +215,41 @@ coeftest(Policy_Stage)
 ```{r}
 
 ## Marine Specific Policies ####
-#SubN_Pol <- Policy_Analysis %>%   ## Subsets marine specific subnational policies
+SubN_Pol <- Policy_Analysis %>%   ## Subsets marine specific subnational policies
   filter(Mar_subN == 3)
-#Nat_Pol <- Policy_Analysis %>%   ##subsets marine specific national policies
+Nat_Pol <- Policy_Analysis %>%   ##subsets marine specific national policies
   filter(Mar_Nat ==3)
+Org_Pol <- Policy_Analysis %>% 
+  filter(Mar_org ==3)
 
-  #marine_specific <- full_join(Nat_Pol, SubN_Pol)  #### joins the two together, all marine specific policies
-
+marine_nat <- full_join(Nat_Pol, SubN_Pol)  #### joins the two together, all marine specific policies
+marine_specific <- full_join(marine_nat, Org_Pol)
 
 ### Policies that are not marine specific, but include marine explicitly ####
-#Sub_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+Sub_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
   filter(Mar_subN == 2)
-#Nat_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+Nat_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
   filter(Mar_Nat == 2)
-#marine_explicit <- full_join(Sub_exp, Nat_exp)
+Org_exp <- Policy_Analysis %>% 
+  filter(Mar_org == 2)
+
+marine_nat2 <- full_join(Sub_exp, Nat_exp)
+marine_explicit <- full_join(marine_nat2, Org_exp)
 
 
 ## Policies that include marine implicitly ###
 
-#marine_implicit <- Policy_Analysis %>% 
-  #filter(Mar_subN == 1 | Mar_Nat == 1 |Mar_supraN == 1 | Mar_org == 1)
+marine_implicit <- Policy_Analysis %>% 
+  filter(Mar_subN == 1 | Mar_Nat == 1 |Mar_supraN == 1 | Mar_org == 1)
 
-#Sub_imp <-Policy_Analysis %>%   ## Subsets marine implicit subnational policies
-#  filter(Mar_subN == 1 )
-#Nat_imp <-Policy_Analysis %>%   ## Subsets marine implicit national policies
-#  filter(Mar_Nat == 1)
-#Supr_imp <- Policy_Analysis %>%   ## Subsets marine implicit supra-national policies
-# filter(Mar_supraN == 1)
-#Mar_Imp <- full_join (Sub_imp, Nat_imp)
-#marine_implicit2 <- full_join (Mar_Imp, Supr_imp)  ##all marine implicit policies
+Sub_imp <-Policy_Analysis %>%   ## Subsets marine implicit subnational policies
+  filter(Mar_subN == 1 )
+Nat_imp <-Policy_Analysis %>%   ## Subsets marine implicit national policies
+  filter(Mar_Nat == 1)
+Supr_imp <- Policy_Analysis %>%   ## Subsets marine implicit supra-national policies
+ filter(Mar_supraN == 1)
+Mar_Imp <- full_join (Sub_imp, Nat_imp)
+marine_implicit2 <- full_join (Mar_Imp, Supr_imp)  ##all marine implicit policies
 
 
 #as.factor(MarinePol$STAGE2)
@@ -253,8 +259,8 @@ coeftest(Policy_Stage)
 #All_marine <- full_join(marine_inclusive, marine_specific) ## Include all marine policies, no matter how included
 
 ## Policies that don't include marine at all
-#No_marine <- Policy_Analysis %>%   ## Subsets no policies
-  #filter(Presence_Absence == 0)
+No_mar <- Policy_Analysis %>%   #Subsets no policies
+  filter(Presence_Absence == 0)
 
 
 ```
@@ -303,6 +309,8 @@ by_country2 <- ALL %>%
 
 ```{r}
 
+
+
 ggplot(Policy_Analysis, aes(x = marine_mech)) +
   geom_bar(stat = 'count') +
   theme(axis.text.x = element_text(angle = 45, size = 7.5, hjust = 1)) +
@@ -322,68 +330,6 @@ grid.table(for_table)
 
 ```
 
-
-
-#Summary stats for marine policies using multinomial logist regression
-```{r}
-
-#install.packages("caret")
-
-
-library(caret)
-library(nnet)
-
-
-#Prepare the data - subsest policy analysis data into just the variables you want in the regression
-
-Var_subset <- Policy_Analysis %>% 
- select(marine_mech, Richness, EEZ_Protected, OHI, mam_bird, Polity2, Rents, GDP)
-
-##inspect the data, this gives you 3 rows
-sample_n(Var_subset, 3)
-
-#split the data into training and test set
-set.seed(123)
-training.samples <- Var_subset$marine_mech %>% 
-  createDataPartition (p=0.8, list = FALSE)
-train.data <- Var_subset[training.samples, ]
-test.data <- Var_subset[-training.samples, ]
-
-##Computing multinomial logistic regression
-
-#Fit the model
-model <- nnet::multinom(Var_subset$marine_mech ~., data = Var_subset)
-
-summary(model) #odds ratio, probability of being in category 1 compared to category 0, neg means theres more probably of being in the reference group (no policy), than the variable
-
-# to get p values
-z <- summary(model)$coefficients/summary(model)$standard.errors
-p <- (1-pnorm(abs(z), 0, 1))*2
-coeftest(model)
-
-
-# Make predictions
-predicted.classes <- model %>% 
-  predict(test.data)
-head(predicted.classes)
-
-#Model accuracy
-mean(predicted.classes == test.data$marine_mech)
-
-##Not sure this is the right test or my data is quite right - not really levels of policy but is it ordinal not nominal?
-
-#getting rid of zeros so just comparing within 'marine policies'
-all_policies<-filter(Var_subset, marine_mech != 0) #!= means "not equal to"
-model2 <- nnet::multinom(marine_mech ~., data = all_policies)
-summary(model2)
-coeftest(model2)
-
-
-some_policies<-filter(Var_subset, marine_mech == 2 | marine_mech ==3) #!= means "not equal to"
-model3 <- nnet::multinom(marine_mech ~., data = some_policies)
-summary(model3)
-coeftest(model3)
-```
 
 
 #Presence Absence AOV and T-test
@@ -438,31 +384,31 @@ TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
 ```{r}
 
 ########Plot marine specific policies vs OHI #################
-ggplot(data = Mar_Pol, aes (x=OHI, y = log(GDP)))+
-  geom_point(data = Mar_Exp, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
-  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
-  geom_point(data = Mar_Imp2, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
-  geom_point(data = No_mar, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
-  geom_point(data = Mar_Pol,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
-  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP)))+
+  geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
+  geom_point(data = implicit, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
+  geom_point(data = none, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
+  geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
   xlab("Ocean Health Index") +
   ylab("logGDP") +
   
-  scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
-                     values = c("green", "red", "grey50", "blue")) +
-  guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
+  #scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
+                     #values = c("green", "red", "grey50", "blue")) +
+  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
   theme_classic()
 
 
-## with marine_mech
+## Polity 2 vs GDP
   
 ggplot(data = Policy_Analysis, aes (x=log(GDP), y = Polity2))+
   geom_point(data = explicit, aes(x=log(GDP), y = Polity2), size = 2, shape = 19, color = "green") +
-  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
   geom_point(data = implicit, aes (x=log(GDP), y = Polity2), size = 2, color = "red")+ 
   geom_point(data = none, aes(x=log(GDP), y = Polity2), size = 2, color = "grey50") +
   geom_point(data = specific, aes(x=log(GDP), y = Polity2), size = 2, color = "blue") 
-  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
   xlab("logGDP") +
   ylab("Polity2") +
   
