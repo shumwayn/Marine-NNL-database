@@ -18,6 +18,8 @@ library(ggplot2)
 library(tidyverse)
 library(RColorBrewer)
 library(effects)
+library(ggrepel)
+library(extrafont)
 
 ```
 
@@ -39,7 +41,7 @@ Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Quee
 ```{r}
 
 head(Policy_Analysis)
-Policy_data <- Policy_Analysis[,4:length(Policy_Analysis)] ## makes a new dataframe from policy analysis, subsets everything to the right of presence/absence
+Policy_data <- Policy_Analysis[,11:length(Policy_Analysis)] ## makes a new dataframe from policy analysis, subsets everything to the right of presence/absence
 View(Policy_data)
 
 
@@ -52,85 +54,7 @@ View(cor_matrix)
 ```
 
 
-### Make Generalized linear model of all data against presence/absence of policy ####
 
-```{r}
-
-All_Model <- glm(Presence_Absence ~ Richness + mam_bird + EEZ_Protected
-                    + Polity2 + GDP + Rents + OHI, 
-                 family = "binomial", data = Policy_Analysis)
-summary(All_Model)
-
-#plot(All_Model)
-```
-
-
-
-#GLMs of Biodiversity Variables
-```{r}
-
-
-
-### GLM of Marine variables#####
-Marine_model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +Policy_Analysis$Richness+Policy_Analysis$OHI, family = "binomial", data = Policy_Analysis)
-summary(Marine_model)
-
-## GLM of response to threat###
-Threat_model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$mam_bird, family = "binomial", data = Policy_Analysis )
-summary(Threat_model)
-
-###GLM of Response to protection####
-Protection_model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$EEZ_Protected, family = "binomial", data = Policy_Analysis)
-summary(Protection_model)
-
-
-###GLM of Response to presence of biodiversity 
-Biodiversity_model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Richness + Policy_Analysis$OHI, family = "binomial", data = Policy_Analysis)
-summary(Biodiversity_model)
-
-
-```
-
-
-```{r}
-
-#####################################
-#####SOCIO-POLITICAL VALUES##########
-#####################################
-
-### All Variables ###
-
-Policy_model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2 + log(Policy_Analysis$GDP) + Policy_Analysis$Rents, family = "binomial", data = Policy_Analysis)
-summary(Policy_model)
-
-### getting a warning message: "glm.fit: fitted probabilities numerically 0 or 1 occurred" - log transformed GDP, no longer getting fit error
-
-## Government Capacity###
-Capacity_Model <- glm(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2 + log(Policy_Analysis$GDP), family = "binomial", data = Policy_Analysis)
-summary(Capacity_Model)
-
-```
-
-
-```{r}
-
-
-######WGI VARIABLES #########
-
-### GLM of Response to World Governance Indicators ##
-#WGI_model <- glm(WGI_Analysis$Presence_Absence ~ WGI_Analysis$Control.of.Corruption + WGI_Analysis$Government.Effectiveness + WGI_Analysis$Political.Stability.Absense.of.Violence + WGI_Analysis$Regulatory.Quality + WGI_Analysis$Rule.of.Law + WGI_Analysis$Voice.Accountability, family = "binomial", data = WGI_Analysis)
-#summary(WGI_model)
-
-#WGI_Analysis$STAGE = factor(WGI_Analysis$STAGE, levels = c("None", "Potential", "Preliminary", "In Progress", "Established") )
-
-
-#WGI_Stage <- polr(WGI_Analysis$STAGE ~  WGI_Analysis$Control.of.Corruption + WGI_Analysis$Government.Effectiveness +
-                   # WGI_Analysis$Political.Stability.Absense.of.Violence + WGI_Analysis$Regulatory.Quality +
-                   # WGI_Analysis$Rule.of.Law + WGI_Analysis$Voice.Accountability, data = WGI_Analysis, Hess = TRUE) 
-#summary(WGI_Stage) 
-#coeftest(WGI_Stage)
-
-```
 
 
 #Ordinal Logistic Regression
@@ -173,6 +97,28 @@ predictstage = predict(All_Stage,Policy_Analysis)
 table(Policy_Analysis$STAGE2, predictstage)
 mean(as.character(Policy_Analysis$STAGE2) != 
        as.character(predictstage))
+
+
+```
+
+#Testing for multicollinearity  
+```{r} 
+
+#https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
+
+library(olsrr)
+
+multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
+
+ols_vif_tol(multico_model)
+View(multico_model)
+
+
+ols_eigen_cindex(multico_model)
+
+ols_coll_diag(multico_model)
 
 
 ```
@@ -332,33 +278,6 @@ grid.table(for_table)
 
 
 
-#Presence Absence AOV and T-test
-```{r}
-
-Var_subset <- Policy_Analysis %>% 
- select(marine_mech, Richness, EEZ_Protected, OHI, mam_bird, Polity2, Rents, GDP)
-
-##inspect the data, this gives you 3 rows
-sample_n(Var_subset, 3)
-
-Presence_aov <- aov(Presence_Absence ~ Polity2 + GDP + OHI + Rents + EEZ_Protected + Richness + mam_bird, data = Policy_Analysis)
-summary(Presence_aov)
-
-
-#T-test for presence absence vs all variables (Indep == Policy)
-
-
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$mam_bird)
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Richness)
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$EEZ_Protected)
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$OHI)
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$GDP)
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2)
-t.test(Policy_Analysis$Presence_Absence, Policy_Analysis$Rents)
-
-
-```
-
 #Marine mechanism AOV and T-test
 ```{r}
 
@@ -402,22 +321,27 @@ ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP)))+
 
 ## Polity 2 vs GDP
   
-ggplot(data = Policy_Analysis, aes (x=log(GDP), y = Polity2))+
-  geom_point(data = specific, aes(x=log(GDP), y = Polity2), size = 2, shape = 19, color = "green") +
-  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =-.08, vjust = -1)+
-  geom_point(data = implicit, aes (x=log(GDP), y = Polity2), size = 2, color = "red")+ 
-  geom_point(data = none, aes(x=log(GDP), y = Polity2), size = 2, color = "grey50") +
-  geom_point(data = explicit, aes(x=log(GDP), y = Polity2), size = 2, color = "blue")+
-  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+ggplot(data = Policy_Analysis, aes (x=log(GDP), y = Polity2), color = Country)+
+  geom_point(data = specific, aes(x=log(GDP), y = Polity2, color = "green"), color = "green", size = 2, shape = 19)+ 
+  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = 0)+
+  geom_point(data = implicit, aes(x=log(GDP), y = Polity2, color = "red"), color = "red", size = 2)+
+  geom_point(data = none, aes(x=log(GDP), y = Polity2, color = "grey50"), color = "grey50", size = 2)+
+  geom_point(data = explicit, aes(x=log(GDP), y = Polity2, color = "blue"),color = "blue", size = 2)+
+  geom_label(x=29, y=-2.5, label = "High capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+  geom_label(x=29, y=11, label = "High capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+  geom_label(x=24, y= -2.5, label = "Low capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+  geom_label(x=24, y=11, label = "Low capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+  theme (text = element_text(family = "Arial"))+
   xlab("logGDP") +
   ylab("Polity2") +
-  xlim (20,31.5)+
+  ylim(-10, 13)+
+  xlim (22,31)+
   geom_hline (yintercept = 0, color = "black") +
-  geom_vline(xintercept = 26, color = "black") +
+  geom_vline(xintercept = 27, color = "black") +
   
   scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
                      values = c("green", "red", "grey50", "blue")) +
-  guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
+  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
   theme_classic()
 
 
