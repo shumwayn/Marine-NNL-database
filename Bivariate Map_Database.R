@@ -53,16 +53,18 @@ colmat<-function(nquantiles=2, upperleft=rgb(0,150,235, maxColorValue=255), uppe
 
 # Here you can specify the number of quantiles, colors and labels of your color matrix. Examples:
 
-col.matrix <- colmat(nquantiles=4, upperleft="#2c7bb6", upperright="#abd9e9", bottomleft="#fc8d59", bottomright="#d7191c", xlab="Climate Change Vulnerability", ylab="Climate Change Relative Search Volume")
-col.matrix <- colmat(nquantiles=4, upperleft="#018571", upperright="#80cdc1", bottomleft="#dfc27d", bottomright="#a6611a", xlab="Climate Change Vulnerability", ylab="Climate Change Relative Search Volume")
-col.matrix <- colmat(nquantiles=3, upperleft="#5e3c99", upperright="#fdb863", bottomleft="#b2abd2", bottomright="#e66101", xlab="Climate Change Vulnerability", ylab="Climate Change Relative Search Volume")
-col.matrix <- colmat(nquantiles=3, upperleft="#2c7bb6", upperright="#fdb863", bottomleft="#abd9e9", bottomright="#d7191c", xlab="Climate Change Vulnerability", ylab="Climate Change Relative Search Volume")
+col.matrix <- colmat(nquantiles=2, upperleft="#2c7bb6", upperright="#abd9e9", bottomleft="#fc8d59", bottomright="#d7191c", xlab="Polity2 Index", ylab="log(GDP)")
+col.matrix <- colmat(nquantiles=2, upperleft="#dfc27d", upperright="#80cdc1", bottomleft="#018571", bottomright="#fc8d59", xlab="Polity2 Index", ylab="log(GDP)")
+col.matrix <- colmat(nquantiles=2, upperleft="#5e3c99", upperright="#fdb863", bottomleft="#b2abd2", bottomright="#e66101", xlab="Polity2 Index", ylab="log(GDP)")
+col.matrix <- colmat(nquantiles=3, upperleft="#2c7bb6", upperright="#fdb863", bottomleft="#abd9e9", bottomright="#d7191c", xlab="Polity2 Index", ylab="log(GDP)")
+col.matrix<-colmat(nquantiles=16, upperleft="purple", upperright="blue", bottomleft="yellow", bottomright="red", xlab="Polity2 Index", ylab="log(GDP)")
+col.matrix<-colmat(nquantiles=10)
 
 # Using the previous function we will both create and plot the color matrix. We'll get something like the following image. Save it, because we'll need it later
 
-### Bivariate Map Function
+### Bivariate Map Function 
 
-bivariate.map<-function(rasterx, rastery, colormatrix=col.matrix, nquantiles=3){ # make sure that "nquantiles=3" equalues the number of quantiles you use above
+bivariate.map <- function(rasterx, rastery, colormatrix=col.matrix, nquantiles=16){ # make sure that "nquantiles=3" equalues the number of quantiles you use above
   quanmean<-getValues(rasterx)
   temp <- data.frame(quanmean, quantile=rep(NA, length(quanmean)))
   brks <- with(temp, unique(quantile(temp,na.rm=TRUE, probs = c(seq(0,1,1/nquantiles)))))      
@@ -88,11 +90,11 @@ bivariate.map<-function(rasterx, rastery, colormatrix=col.matrix, nquantiles=3){
   return(r)}
 
 # Add raster data for example:
-wd <- setwd("/Users/uqcarchi/Dropbox/PhD/PLC ES paper/Kappa/")
+wd <- setwd("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Raster_files")
 getwd()
 list.files()
-X1 <- raster("X1.tif")
-X2 <- raster("X2.tif")
+X1 <- raster("Country_Polity2.tif")
+X2 <- raster("Country_GDP.tif")
 
 plot(X1) # view raster data
 plot(X2)
@@ -115,3 +117,13 @@ X3_shp$ExtractDataX2 <- extract(X2, X3_shp, fun = mean)
 writePolyShape(X3_shp, "X3_shp")
 write.csv(X3_shp, file="./X3_shp.csv")
 
+## To plot OHI vs. GDP ##
+
+plot(X2)
+plot(X3)
+
+#Create map #
+bivmap <- bivariate.map(X2,X3, colormatrix=col.matrix, nquantiles=3)
+
+plot(bivmap,frame.plot=F,axes=F,box=F,add=F,legend=T,col=as.vector(col.matrix))
+map(interior=T,add=T)

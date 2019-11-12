@@ -57,7 +57,7 @@ View(cor_matrix)
 
 
 
-#Ordinal Logistic Regression
+#Ordinal Logistic Regression for ALL Policies
 ```{r}
 
 #To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
@@ -100,6 +100,14 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 
 
 ```
+
+
+#Ordinal Logistic regression for marine policies
+```{r}
+
+```
+
+
 
 #Testing for multicollinearity  
 ```{r} 
@@ -276,6 +284,18 @@ grid.table(for_table)
 
 ```
 
+##Subset variables for analysis
+```{r}
+
+Var_subset <- Policy_Analysis %>% 
+  select(marine_mech, Richness, GDP, EEZ_Protected, OHI, mam_bird, Rents, Polity2)
+
+
+Offset_subset <- offsets_db %>% 
+  select(Country, Region, Marine.Specific, Implicit_Explicit, Focus, Year, Stage)
+  
+
+```
 
 
 #Marine mechanism AOV and T-test
