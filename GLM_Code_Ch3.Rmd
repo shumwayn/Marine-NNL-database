@@ -31,9 +31,6 @@ library(polr)
 Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
 
 
-#WGI_analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/PhD Research/Ch. 1a Marine NNL Policy Review/WGI_analysis.csv")
-#View(WGI_Analysis)
-
 ```
 
 
@@ -107,14 +104,13 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 ```{r}
 
 Marine_Stage <- Policy_Analysis %>% 
-  filter(marine_mech == 3|2|1)
+  filter(marine_mech == 3| marine_mech == 2|marine_mech == 1)
   
 
 Marine_Stage$STAGE2 = factor(Marine_Stage$STAGE2, levels = c("0", "1", "2", "3", "4") )
 
-All_Stage2 <- polr(Marine_Stage$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
-                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
-                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis, Hess = TRUE) 
+All_Stage2 <- polr(STAGE2 ~  mam_bird + EEZ_Protected + OHI + log(GDP) + 
+                      Polity2 + Richness, data = Marine_Stage, Hess = TRUE) 
 summary(All_Stage2) 
 coeftest(All_Stage2)
 
@@ -287,6 +283,24 @@ by_country2 <- ALL %>%
 ```
 
 
+#By type of policy
+```{r}
+
+#marine specific policies focus on Biodiversity (n=4), Mangrove or Seagrass (n=3), marine ecosystems (n=2), Fish (n=1)
+summary(specific$Focus)
+
+#marine explicit policies
+policy_type_exp <-offsets_db %>% 
+  filter(Marine.Specific == "No") %>% 
+  filter(marine.included == "Yes") %>% 
+  filter(Implicit_Explicit == "Explicit")
+
+##marine explicit policies focus on Biodiversity (n=23), Wetlands or Mangroves (n=11), Coastal or marine environments (n=8), Fish
+sum_exp <-summary(policy_type_exp$Focus)
+
+View(sum_exp)
+```
+
 #Summary stats for marine policies as tables
 
 ```{r}
@@ -334,17 +348,14 @@ Offset_subset <- offsets_db %>%
 Marine_aov <- aov(marine_mech ~ Polity2 + GDP + OHI + Rents + EEZ_Protected + Richness + mam_bird, data = Var_subset)
 summary(Marine_aov)
 
+Var_subset$GDP = as.factor(Var_subset$GDP)
 
+#Tukey Test # not working
 
-#Tukey Test # not working!
+TukeyHSD(aov(marine_mech ~ as.factor(Polity2), Var_subset))
 
+TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
 
-TukeyHSD(Marine_aov, as.factor(Polity20, Var_subset))
-
-summary(aov(marine_mech ~ as.factor(GDP), Var_subset)) 
-TukeyHSD(aov(marine_mech ~ as.factor(GDP), Var_subset))
-
-summary(aov(marine_mech ~ as.factor(OHI), Var_subset))
 TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
 ```
 
@@ -393,7 +404,7 @@ ggplot(data = Policy_Analysis, aes (x=log(GDP), y = Polity2), color = Country)+
   
   scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
                      values = c("green", "red", "grey50", "blue")) +
-  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
+  guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
   theme_classic()
 
 
@@ -425,8 +436,8 @@ ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
   theme_minimal()
 
 
-ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
-  geom_point(data = Mar_Pol,aes(x=Richness, y = log(GDP)), size = 2, color = "blue") +
+ggplot(data = Mar_Pol, aes (x=log(GDP), y = Richness))+
+  geom_point(data = Mar_Pol, aes(x=log(GDP), y = Richness, size = 2, color = "blue")) +
   geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
   
   geom_point(data = Mar_Imp2, aes(x=Richness, y = log(GDP)), size = 2, color = "pink") +
@@ -437,7 +448,6 @@ ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
   
   geom_point(data = No_mar, aes(x=Richness, y = log(GDP)), size = 2, color = "black") +
   geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
-  
   xlab("Richness") +
   ylab("logGDP")+
   
@@ -526,7 +536,7 @@ interaction.plot(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, Poli
 names <- c('1' = "Policy present",
            '2' = "Policy absent")
 
-ggplot(Policy_Analysis, x = Presence_Absense, y = Polity2) +
+ggplot(aes(Policy_Analysis, x = Presence_Absense, y = Polity2)) +
   geom_boxplot()+
   labs(x = "Policy",
        y = "Polity2 Score") +
