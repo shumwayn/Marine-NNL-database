@@ -20,6 +20,7 @@ library(RColorBrewer)
 library(effects)
 library(ggrepel)
 library(extrafont)
+library(polr)
 
 ```
 
@@ -102,8 +103,35 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 ```
 
 
-#Ordinal Logistic regression for marine policies
+#Ordinal Logistic regression for marine policies only
 ```{r}
+
+Marine_Stage <- Policy_Analysis %>% 
+  filter(marine_mech == 3|2|1)
+  
+
+Marine_Stage$STAGE2 = factor(Marine_Stage$STAGE2, levels = c("0", "1", "2", "3", "4") )
+
+All_Stage2 <- polr(Marine_Stage$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis, Hess = TRUE) 
+summary(All_Stage2) 
+coeftest(All_Stage2)
+
+
+#confidence intervals
+ci_All <- confint(All_Stage2)
+
+
+#After building the model and interpreting the model, the next step is to evaluate it. 
+  #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
+
+#Compute confusion table and misclassification error - model predicts 0,1 bette
+predictstage = predict(All_Stage2,Policy_Analysis)
+table(Marine_Stage$STAGE2, predictstage)
+mean(as.character(Marine_Stage$STAGE2) != 
+       as.character(predictstage))
+
 
 ```
 
@@ -302,14 +330,18 @@ Offset_subset <- offsets_db %>%
 ```{r}
 
 
+
 Marine_aov <- aov(marine_mech ~ Polity2 + GDP + OHI + Rents + EEZ_Protected + Richness + mam_bird, data = Var_subset)
 summary(Marine_aov)
 
-#Tukey Test
-summary(aov(marine_mech ~ as.factor(Polity2), Var_subset))
-TukeyHSD(aov(marine_mech ~ as.factor(Polity2), Var_subset))
 
-summary(aov(marine_mech ~ as.factor(GDP), Var_subset))
+
+#Tukey Test # not working!
+
+
+TukeyHSD(Marine_aov, as.factor(Polity20, Var_subset))
+
+summary(aov(marine_mech ~ as.factor(GDP), Var_subset)) 
 TukeyHSD(aov(marine_mech ~ as.factor(GDP), Var_subset))
 
 summary(aov(marine_mech ~ as.factor(OHI), Var_subset))
