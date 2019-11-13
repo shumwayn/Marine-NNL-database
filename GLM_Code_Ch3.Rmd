@@ -52,9 +52,6 @@ View(cor_matrix)
 ```
 
 
-
-
-
 #Ordinal Logistic Regression for ALL Policies
 ```{r}
 
@@ -260,6 +257,7 @@ specific <- Policy_Analysis %>%
 
 
 #filters by country (n=36)
+
 specific_explicit <- Policy_Analysis %>% 
   filter(marine_mech == "2" | marine_mech == "3")
 
@@ -345,21 +343,25 @@ Offset_subset <- offsets_db %>%
 #Marine mechanism AOV and T-test
 ```{r}
 
+manova1 <- manova(cbind(GDP, Polity2, OHI, Rents, EEZ_Protected, Richness, mam_bird) ~ marine_mech, data = Var_subset)
+summary.aov(manova1)
+
+aov1 <- aov(OHI ~ marine_mech, data = Var_subset)
+summary(aov1)
+
+#Tukey Test # ## need to check multiple post hoc tests ## Bonferonni
+
+#TukeyHSD(aov(GDP ~ marine_mech, Var_subset)) #sign diff between countries with no policy compare to countries, no difference between policies
+
+#TukeyHSD(aov(OHI ~ marine_mech, Var_subset))
+
+#TukeyHSD(aov(Rents ~ marine_mech, Var_subset))
+
+#TukeyHSD(aov(Polity2 ~ marine_mech, Var_subset))
 
 
-Marine_aov <- aov(marine_mech ~ Polity2 + GDP + OHI + Rents + EEZ_Protected + Richness + mam_bird, data = Var_subset)
-summary(Marine_aov)
-
-Var_subset$GDP = as.factor(Var_subset$GDP)
-
-#Tukey Test # not working
-
-TukeyHSD(aov(marine_mech ~ as.factor(Polity2), Var_subset))
-
-TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
-
-TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
 ```
+
 
 
 #Plotting
