@@ -100,30 +100,30 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 ```
 
 
-#Ordinal Logistic regression for marine policies only
+#Ordinal Logistic regression for marine policies only ## not sure if just marine mech makes sense? Trish?
 ```{r}
 
 Marine_Stage <- Policy_Analysis %>% 
-  filter(marine_mech == 3| marine_mech == 2|marine_mech == 1)
+  filter(marine_mech == 3| marine_mech == 2|marine_mech == 1) #add | marine_mech == 0?
   
 
 Marine_Stage$STAGE2 = factor(Marine_Stage$STAGE2, levels = c("0", "1", "2", "3", "4") )
 
-All_Stage2 <- polr(STAGE2 ~  mam_bird + EEZ_Protected + OHI + log(GDP) + 
+Marine_Stage2 <- polr(STAGE2 ~  mam_bird + EEZ_Protected + OHI + log(GDP) + 
                       Polity2 + Richness, data = Marine_Stage, Hess = TRUE) 
-summary(All_Stage2) 
-coeftest(All_Stage2)
+summary(Marine_Stage2) 
+coeftest(Marine_Stage2)
 
 
 #confidence intervals
-ci_All <- confint(All_Stage2)
+ci_All <- confint(Marine_Stage2)
 
 
 #After building the model and interpreting the model, the next step is to evaluate it. 
   #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
 
 #Compute confusion table and misclassification error - model predicts 0,1 bette
-predictstage = predict(All_Stage2,Policy_Analysis)
+predictstage = predict(Marine_Stage2,Marine_Stage)
 table(Marine_Stage$STAGE2, predictstage)
 mean(as.character(Marine_Stage$STAGE2) != 
        as.character(predictstage))
@@ -248,9 +248,11 @@ No_mar <- Policy_Analysis %>%   #Subsets no policies
 #load data
 offsets_db <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Offsets by country.csv", comment.char="#")
 
+sp_policy <- offsets_db %>% 
+  filter(Marine.Specific == "Yes")
+
 
 #Filter db by marine specific policies
-
 
 #filters by country
 specific <- Policy_Analysis %>% 
@@ -366,46 +368,78 @@ TukeyHSD(aov(marine_mech ~ as.factor(OHI), Var_subset))
 ```{r}
 
 ########Plot marine specific policies vs OHI #################
-ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP)))+
-  geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
-  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5)+
-  geom_point(data = implicit, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
-  geom_point(data = none, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
-  geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
-  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+
+Policy_Analysis$marine_mech = as.factor(Policy_Analysis$marine_mech)
+Implementation <- c("3"= "Marine specific", 
+                    "2" = "Marine explicit",
+                    "1" = "Marine Implicit", 
+                    "0" = "No Policy")
+
+
+ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)+
   xlab("Ocean Health Index") +
   ylab("logGDP") +
+  theme_classic()+
+  labs(fill = "Policy Type", subtitle = Implementation) #not working
+
+##OR##
+
+ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech))+ 
+  geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
+  geom_smooth(data = specific, method = "lm", se = FALSE, color = "green") +
+  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+
+  geom_point(data = implicit, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
   
-  #scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
-                     #values = c("green", "red", "grey50", "blue")) +
-  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
-  theme_classic()
+  geom_point(data = none, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
+  
+  geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
+  geom_smooth(data = explicit, method = "lm", se= FALSE, color = "blue") +
+
+  xlab("Ocean Health Index") +
+  ylab("logGDP") +
+  theme_classic() 
+  
+  
 
 
 ## Polity 2 vs GDP
   
-ggplot(data = Policy_Analysis, aes (x=log(GDP), y = Polity2), color = Country)+
-  geom_point(data = specific, aes(x=log(GDP), y = Polity2, color = "green"), color = "green", size = 2, shape = 19)+ 
-  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = 0)+
-  geom_point(data = implicit, aes(x=log(GDP), y = Polity2, color = "red"), color = "red", size = 2)+
-  geom_point(data = none, aes(x=log(GDP), y = Polity2, color = "grey50"), color = "grey50", size = 2)+
-  geom_point(data = explicit, aes(x=log(GDP), y = Polity2, color = "blue"),color = "blue", size = 2)+
-  geom_label(x=29, y=-2.5, label = "High capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
-  geom_label(x=29, y=11, label = "High capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
-  geom_label(x=24, y= -2.5, label = "Low capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
-  geom_label(x=24, y=11, label = "Low capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
-  theme (text = element_text(family = "Arial"))+
-  xlab("logGDP") +
-  ylab("Polity2") +
-  ylim(-10, 13)+
-  xlim (22,31)+
-  geom_hline (yintercept = 0, color = "black") +
-  geom_vline(xintercept = 27, color = "black") +
+ggplot(data = Policy_Analysis,
+       aes (x=log(GDP), y = Polity2, color = marine_mech)) +
+geom_point(data = specific, 
+           aes(x=log(GDP), y = Polity2, color = "green"), color = "green", size = 2, shape = 19)+ 
+geom_text(data = specific, 
+          aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = 0)+
+geom_point(data = implicit, 
+           aes(x=log(GDP), y = Polity2, color = "red"), color = "red", size = 2)+
+geom_point(data = none, 
+           aes(x=log(GDP), y = Polity2, color = "grey50"), color = "grey50", size = 2)+
+geom_point(data = explicit, 
+           aes(x=log(GDP), y = Polity2, color = "blue"),color = "blue", size = 2)+
+
+geom_label(x=29, y=-2.5, label = "High capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+
+geom_label(x=29, y=11, label = "High capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+
+geom_label(x=24, y= -2.5, label = "Low capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+
+geom_label(x=24, y=11, label = "Low capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+
+theme (text = element_text(family = "Arial"))+
+xlab("logGDP") +
+ylab("Polity2") +
+ylim(-10, 13)+
+xlim (22,31)+
+geom_hline (yintercept = 0, color = "black") +
+geom_vline(xintercept = 27, color = "black") +
+theme_classic()
+  #scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
+                     #values = c("green", "red", "grey50", "blue")) +
+  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
   
-  scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
-                     values = c("green", "red", "grey50", "blue")) +
-  guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
-  theme_classic()
 
 
 ```
