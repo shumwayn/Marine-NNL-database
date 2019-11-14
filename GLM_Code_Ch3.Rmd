@@ -21,6 +21,7 @@ library(effects)
 library(ggrepel)
 library(extrafont)
 library(polr)
+library(lsr)
 
 ```
 
@@ -144,10 +145,6 @@ multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_A
 ols_vif_tol(multico_model)
 View(multico_model)
 
-
-ols_eigen_cindex(multico_model)
-
-ols_coll_diag(multico_model)
 
 
 ```
@@ -343,22 +340,59 @@ Offset_subset <- offsets_db %>%
 #Marine mechanism AOV and T-test
 ```{r}
 
-manova1 <- manova(cbind(GDP, Polity2, OHI, Rents, EEZ_Protected, Richness, mam_bird) ~ marine_mech, data = Var_subset)
-summary.aov(manova1)
 
-aov1 <- aov(OHI ~ marine_mech, data = Var_subset)
-summary(aov1)
+#ANOVA
+  #eta squared for effect size #
 
-#Tukey Test # ## need to check multiple post hoc tests ## Bonferonni
+aov_GDP <-aov (GDP ~ marine_mech, data = Var_subset)
+summary.aov(aov_GDP)
+etaSquared(aov_GDP)
 
-#TukeyHSD(aov(GDP ~ marine_mech, Var_subset)) #sign diff between countries with no policy compare to countries, no difference between policies
+aov_Polity <- aov (Polity2 ~ marine_mech, data = Var_subset)
+summary.aov(aov_Polity)
+etaSquared(aov_Polity)
 
-#TukeyHSD(aov(OHI ~ marine_mech, Var_subset))
+aov_OHI <- aov (OHI ~ marine_mech, data = Var_subset)
+summary.aov(aov_OHI)
+etaSquared(aov_OHI)
 
-#TukeyHSD(aov(Rents ~ marine_mech, Var_subset))
+aov_Rents <- aov (Rents ~ marine_mech, data = Var_subset)
+summary.aov(aov_Rents)
+etaSquared(aov_Rents)
 
-#TukeyHSD(aov(Polity2 ~ marine_mech, Var_subset))
+aov_EEZ <- aov (EEZ_Protected ~ marine_mech, data = Var_subset)
+summary.aov(aov_EEZ)
+etaSquared(aov_EEZ)
 
+aov_mam <- aov (mam_bird ~ marine_mech, data = Var_subset)
+summary.aov(aov_mam)
+etaSquared(aov_mam)
+
+aov_rich <- aov (Richness ~ marine_mech, data = Var_subset)
+summary.aov(aov_rich)
+etaSquared(aov_rich)
+
+#Bonferroni Correction # Only investigating ones that were significant in aov
+
+
+pairwise.t.test(Var_subset$OHI, Var_subset$marine_mech, p.adjust = "none")
+pairwise.t.test(Var_subset$OHI, Var_subset$marine_mech, p.adjust = "bonferroni")
+
+pairwise.t.test(Var_subset$GDP, Var_subset$marine_mech, p.adjust = "none")
+pairwise.t.test(Var_subset$GDP, Var_subset$marine_mech, p.adjust = "bonferroni")
+
+pairwise.t.test(Var_subset$Polity2, Var_subset$marine_mech, p.adjust = "none")
+pairwise.t.test(Var_subset$Polity2, Var_subset$marine_mech, p.adjust = "bonferroni")
+
+```
+
+#Bonferonni correction - post hoc analysis
+```{r}
+
+#library(car)
+#library(carData)
+
+#outlierTest(lm(marine_mech ~EEZ_Protected, data=Var_subset))
 
 ```
 
