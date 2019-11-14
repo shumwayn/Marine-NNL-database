@@ -20,7 +20,6 @@ library(RColorBrewer)
 library(effects)
 library(ggrepel)
 library(extrafont)
-library(polr)
 library(lsr)
 
 ```
@@ -96,39 +95,6 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 
 
 ```
-
-
-#Ordinal Logistic regression for marine policies only ## not sure if just marine mech makes sense? Trish?
-```{r}
-
-Marine_Stage <- Policy_Analysis %>% 
-  filter(marine_mech == 3| marine_mech == 2|marine_mech == 1) #add | marine_mech == 0?
-  
-
-Marine_Stage$STAGE2 = factor(Marine_Stage$STAGE2, levels = c("0", "1", "2", "3", "4") )
-
-Marine_Stage2 <- polr(STAGE2 ~  mam_bird + EEZ_Protected + OHI + log(GDP) + 
-                      Polity2 + Richness, data = Marine_Stage, Hess = TRUE) 
-summary(Marine_Stage2) 
-coeftest(Marine_Stage2)
-
-
-#confidence intervals
-ci_All <- confint(Marine_Stage2)
-
-
-#After building the model and interpreting the model, the next step is to evaluate it. 
-  #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
-
-#Compute confusion table and misclassification error - model predicts 0,1 bette
-predictstage = predict(Marine_Stage2,Marine_Stage)
-table(Marine_Stage$STAGE2, predictstage)
-mean(as.character(Marine_Stage$STAGE2) != 
-       as.character(predictstage))
-
-
-```
-
 
 
 #Testing for multicollinearity  
@@ -377,13 +343,18 @@ etaSquared(aov_rich)
 
 pairwise.t.test(Var_subset$OHI, Var_subset$marine_mech, p.adjust = "none")
 pairwise.t.test(Var_subset$OHI, Var_subset$marine_mech, p.adjust = "bonferroni")
+t1 <- t.test(Var_subset$OHI, Var_subset$marine_mech, paired = T)
+t1
 
 pairwise.t.test(Var_subset$GDP, Var_subset$marine_mech, p.adjust = "none")
 pairwise.t.test(Var_subset$GDP, Var_subset$marine_mech, p.adjust = "bonferroni")
+t2 <- t.test(Var_subset$GDP, Var_subset$marine_mech, paired = T)
+t2
 
 pairwise.t.test(Var_subset$Polity2, Var_subset$marine_mech, p.adjust = "none")
 pairwise.t.test(Var_subset$Polity2, Var_subset$marine_mech, p.adjust = "bonferroni")
-
+t3 <- t.test(Var_subset$Polity2, Var_subset$marine_mech, paired = T) #to get Tvalue
+t3
 ```
 
 #Bonferonni correction - post hoc analysis
