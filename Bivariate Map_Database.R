@@ -1,16 +1,3 @@
-####### ----------------------------------------------------------------------- ####### 
-#
-#     Bivariate Maps: "bivariate.map" 
-#       
-# ---------------------------------------------------------------------------
-# bivariate.map.r
-# Created by: Modified by: Nicki Shumway 22/08/19
-#   http://rfunctions.blogspot.com/2015/03/bivariate-maps-bivariatemap-function.html
-# Description: This R scipt which maos spatial data against eachother to create a bivarioute map 
-# ---------------------------------------------------------------------------
-
-### Packages
-
 # Install:
 
 install.packages("classInt")
@@ -21,7 +8,7 @@ install.packages("XML")
 install.packages("maps")
 install.packages("sp")
 
-# Load:
+# Load: ### this didn't work on GPEM comp so use below script to save to the local drive
 
 library(classInt)
 library(raster)
@@ -31,9 +18,27 @@ library(XML)
 library(maps)
 library(sp)
 
-### Colour matrix, this a function to create the ledgend and generates the colour map used to fill the map, you 
+install.packages("classInt", lib="C:/software/Rpackages")
+library("classInt", lib.loc="C:/software/Rpackages")
+install.packages("raster", lib="C:/software/Rpackages")
+library("raster", lib.loc="C:/software/Rpackages")
+install.packages("rgdal", lib="C:/software/Rpackages")
+library("rgdal", lib.loc="C:/software/Rpackages")
+install.packages("dismo", lib="C:/software/Rpackages")
+library("dismo", lib.loc="C:/software/Rpackages")
+install.packages("XML", lib="C:/software/Rpackages")
+library("XML", lib.loc="C:/software/Rpackages")
+install.packages("maps", lib="C:/software/Rpackages")
+library("maps", lib.loc="C:/software/Rpackages")
+install.packages("sp", lib="C:/software/Rpackages")
+library("sp", lib.loc="C:/software/Rpackages")
 
-colmat<-function(nquantiles=2, upperleft=rgb(0,150,235, maxColorValue=255), upperright=rgb(130,0,80, maxColorValue=255), bottomleft="grey", bottomright=rgb(255,230,15, maxColorValue=255), xlab="x label", ylab="y label"){ 
+home <- ("C://Users//uqjalla1//Downloads//wetransfer-244711");
+setwd(home)
+
+# create the colour matrix
+
+colmat<-function(nquantiles=10, upperleft=rgb(0,150,235, maxColorValue=255), upperright=rgb(130,0,80, maxColorValue=255), bottomleft="grey", bottomright=rgb(255,230,15, maxColorValue=255), xlab="x label", ylab="y label"){
   my.data<-seq(0,1,.01)
   my.class<-classIntervals(my.data,n=nquantiles,style="quantile")
   my.pal.1<-findColours(my.class,c(upperleft,bottomleft))
@@ -50,29 +55,27 @@ colmat<-function(nquantiles=2, upperleft=rgb(0,150,235, maxColorValue=255), uppe
   seqs[1]<-1
   col.matrix <- col.matrix[c(seqs), c(seqs)]}
 
+# You can specify the number of quantiles, colors and labels of your color matrix. Example:
 
-# Here you can specify the number of quantiles, colors and labels of your color matrix. Examples:
+col.matrix <- colmat(nquantiles=10, upperleft="blue", upperright="red", bottomleft="black", bottomright="yellow", xlab="Bird Richness", ylab="Distance to coca plantation")
 
-col.matrix <- colmat(nquantiles=2, upperleft="#2c7bb6", upperright="#abd9e9", bottomleft="#fc8d59", bottomright="#d7191c", xlab="Polity2 Index", ylab="log(GDP)")
-col.matrix <- colmat(nquantiles=2, upperleft="#dfc27d", upperright="#80cdc1", bottomleft="#018571", bottomright="#fc8d59", xlab="Polity2 Index", ylab="log(GDP)")
-col.matrix <- colmat(nquantiles=2, upperleft="#5e3c99", upperright="#fdb863", bottomleft="#b2abd2", bottomright="#e66101", xlab="Polity2 Index", ylab="log(GDP)")
-col.matrix <- colmat(nquantiles=3, upperleft="#2c7bb6", upperright="#fdb863", bottomleft="#abd9e9", bottomright="#d7191c", xlab="Polity2 Index", ylab="log(GDP)")
-col.matrix<-colmat(nquantiles=16, upperleft="purple", upperright="blue", bottomleft="yellow", bottomright="red", xlab="Polity2 Index", ylab="log(GDP)")
-col.matrix<-colmat(nquantiles=10)
 
-# Using the previous function we will both create and plot the color matrix. We'll get something like the following image. Save it, because we'll need it later
+# But let's use this simple code. You can change "nquantiles" to generate color matrices with different color schemes. For example, change it to 4 to produce a 4x4 color scheme.
 
-### Bivariate Map Function 
+col.matrix <- colmat(nquantiles=10)
 
-bivariate.map <- function(rasterx, rastery, colormatrix=col.matrix, nquantiles=16){ # make sure that "nquantiles=3" equalues the number of quantiles you use above
+# Using the previous function we will both create and plot the color matrix. We'll get something like the following image. Save it, because we'll need it later.
+
+### START COPYING HERE ###
+bivariate.map<-function(rasterx, rastery, colormatrix=col.matrix, nquantiles=10){
   quanmean<-getValues(rasterx)
   temp <- data.frame(quanmean, quantile=rep(NA, length(quanmean)))
-  brks <- with(temp, unique(quantile(temp,na.rm=TRUE, probs = c(seq(0,1,1/nquantiles)))))      
+  brks <- with(temp, unique(quantile(temp,na.rm=TRUE, probs = c(seq(0,1,1/nquantiles)))))
   r1 <- within(temp, quantile <- cut(quanmean, breaks = brks, labels = 2:length(brks),include.lowest = TRUE))
   quantr<-data.frame(r1[,2]) 
   quanvar<-getValues(rastery)
   temp <- data.frame(quanvar, quantile=rep(NA, length(quanvar)))
-  brks <- with(temp, quantile(temp,na.rm=TRUE, probs = c(seq(0,1,1/nquantiles))))
+  brks <- with(temp, unique(quantile(temp,na.rm=TRUE, probs = c(seq(0,1,1/nquantiles)))))
   r2 <- within(temp, quantile <- cut(quanvar, breaks = brks, labels = 2:length(brks),include.lowest = TRUE))
   quantr2<-data.frame(r2[,2])
   as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
@@ -88,42 +91,36 @@ bivariate.map <- function(rasterx, rastery, colormatrix=col.matrix, nquantiles=1
   r<-rasterx
   r[1:length(r)]<-cols
   return(r)}
+### STOP COPYING AND PASTE INTO R ###
 
-# Add raster data for example:
-wd <- setwd("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Raster_files")
-getwd()
-list.files()
-X1 <- raster("Country_Polity2.tif")
-X2 <- raster("Country_GDP.tif")
+# Load the first raster for x axis e.g. ("GDP"):
+raster.x<-raster("Country_GDP.tif")
+raster.x
+plot(raster.x)
 
-plot(X1) # view raster data
-plot(X2)
+# Load the second raster for y axis e.g. ("Armed_Actions")
+raster.y<-raster("Country_Polity2.tif")
+raster.y
+plot(raster.y)
 
-# Create Bivariate map
-bivmap <- bivariate.map(X1,X2, colormatrix=col.matrix, nquantiles=3)
+#to syncronize the extent and everything with other raster
 
-plot(bivmap,frame.plot=F,axes=F,box=F,add=F,legend=T,col=as.vector(col.matrix))
+install.packages("spatial.tools")
+library(spatial.tools)
+r1<-raster.y # your reference raster
+r2<-raster.x # the one you want to sync with the reference
+r3 <- spatial_sync_raster(r2,r1) # r3 will now have the save extents and everything as the reference raster
+raster.x <- r3
+# plot the first raster
+my.colors = colorRampPalette(c("white","lightblue", "yellow","orangered", "red"))
+plot(raster.x,frame.plot=F,axes=F,box=F,add=F,legend.width=1,legend.shrink=1,col=my.colors(255)) 
 map(interior=T,add=T)
 
-# If you want to extract the Bivariate data for each location in your case study area
+my.colors = colorRampPalette(c("white","lightblue", "yellow","orangered", "red"))
+plot(raster.y,frame.plot=F,axes=F,box=F,add=F,legend.width=1,legend.shrink=1,col=my.colors(255)) 
+map(interior=T,add=T)
 
-X3_shp <- readOGR(dsn="X3.shp", layer="X3")
+bivmap<-bivariate.map(raster.x,raster.y, colormatrix=col.matrix, nquantiles=10)
 
-# Extract raster values to polygons
-X3_shp$ExtractData <- extract(bivmap, X3_shp, fun = mean) 
-X3_shp$ExtractDataX1 <- extract(X1, X3_shp, fun = mean) 
-X3_shp$ExtractDataX2 <- extract(X2, X3_shp, fun = mean) 
-
-writePolyShape(X3_shp, "X3_shp")
-write.csv(X3_shp, file="./X3_shp.csv")
-
-## To plot OHI vs. GDP ##
-
-plot(X2)
-plot(X3)
-
-#Create map #
-bivmap <- bivariate.map(X2,X3, colormatrix=col.matrix, nquantiles=3)
-
-plot(bivmap,frame.plot=F,axes=F,box=F,add=F,legend=T,col=as.vector(col.matrix))
+plot(bivmap,frame.plot=F,axes=F,box=F,add=F,legend=F,col=as.vector(col.matrix))
 map(interior=T,add=T)
