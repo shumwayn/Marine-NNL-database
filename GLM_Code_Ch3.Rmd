@@ -7,6 +7,22 @@ editor_options:
   chunk_output_type: console
 ---
 
+#Install packages
+```{r}
+install.packages("Hmisc")
+install.packages("MASS")
+install.packages("AER")
+install.packages("ggplot2")
+install.packages("tidyverse")
+install.packages("RColorBrewer")
+install.packages("effects")
+install.packages("ggrepel")
+install.packages("extrafont")
+install.packages("lsr")
+```
+
+
+
 #Load packages
 ```{r setup}
 
@@ -33,6 +49,24 @@ Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Quee
 
 ```
 
+#Summary Information
+```{r}
+
+summary(offsets_db$Scale)
+
+scale <- offsets_db %>% 
+  filter(Implicit_Explicit == "Explicit")
+summary(scale$Scale)
+
+regions <- offsets_db %>% 
+  filter(Implicit_Explicit == "Explicit")
+
+summary(regions$Region)
+
+focus <- offsets_db %>% 
+  filter(Implicit_Explicit == "Explicit")
+summary(focus$Focus)
+```
 
 #Correlation Matrix - ALL DATA
 
@@ -82,6 +116,52 @@ coeftest(All_Stage)
 
 #confidence intervals
 ci_All <- confint(All_Stage)
+
+
+#After building the model and interpreting the model, the next step is to evaluate it. 
+  #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
+
+#Compute confusion table and misclassification error - model predicts 0,1 bette
+predictstage = predict(All_Stage,Policy_Analysis)
+table(Policy_Analysis$STAGE2, predictstage)
+mean(as.character(Policy_Analysis$STAGE2) != 
+       as.character(predictstage))
+
+
+```
+
+#Ordinal Logistic Regression for just marine Policies 1-2-3
+```{r}
+
+#To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
+
+#Dividing data into training and test set
+#Random sampling
+#samplesize = .60*nrow(Policy_data)
+#index = sample(seq_len(nrow(Policy_data)), size = samplesize)
+#Creating training and test set 
+#datatrain <- Policy_Analysis[index,]
+#datatest <- Policy_Analysis[-index,]
+
+
+
+## Build ordinal logistic regression model
+
+### Stage of Policy vs. ALL values ###
+
+Just_marine <-Policy_Analysis %>% 
+  filter(marine_mech ==2 | marine_mech == 3)
+
+Just_marine$STAGE2 = factor(Just_marine$STAGE2, levels = c("0", "1", "2", "3", "4") )
+
+Marine_Stage <- polr(Just_marine$STAGE2 ~  Just_marine$mam_bird +Just_marine$EEZ_Protected +
+                      Just_marine$OHI + log(Just_marine$GDP) + 
+                      Just_marine$Polity2 + Just_marine$Richness, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness and NRR not significant
+summary(Marine_Stage) 
+coeftest(Marine_Stage)
+
+#confidence intervals
+ci_All <- confint(Marine_Stage)
 
 
 #After building the model and interpreting the model, the next step is to evaluate it. 
@@ -417,23 +497,23 @@ ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech))+
 ggplot(data = Policy_Analysis,
        aes (x=log(GDP), y = Polity2, color = marine_mech)) +
 geom_point(data = specific, 
-           aes(x=log(GDP), y = Polity2, color = "green"), color = "green", size = 2, shape = 19)+ 
+           aes(x=log(GDP), y = Polity2, color = "#009933"), color = "#009933", size = 2, shape = 19)+ 
 geom_text(data = specific, 
-          aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = 0)+
+          aes(label= COUNTRY),size = 3.5, color="black", hjust =-1, vjust = 0)+
 geom_point(data = implicit, 
-           aes(x=log(GDP), y = Polity2, color = "red"), color = "red", size = 2)+
+           aes(x=log(GDP), y = Polity2, color = "#33FF99"), color = "#33FF99", size = 2)+
 geom_point(data = none, 
            aes(x=log(GDP), y = Polity2, color = "grey50"), color = "grey50", size = 2)+
 geom_point(data = explicit, 
-           aes(x=log(GDP), y = Polity2, color = "blue"),color = "blue", size = 2)+
+           aes(x=log(GDP), y = Polity2, color = "00CC66"),color = "00CC66", size = 2)+
 
-geom_label(x=29, y=-2.5, label = "High capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+geom_label(x=29, y=-2.5, label = "High capacity, Low implementation", size =3.5, vjust = -1, fill = "#d7191c", color = "white")+
 
-geom_label(x=29, y=11, label = "High capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+geom_label(x=29, y=11, label = "High capacity, High implementation", size =3.5, vjust = -1, fill = "#abd9e9", color = "white")+
 
-geom_label(x=24, y= -2.5, label = "Low capacity, Low implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+geom_label(x=24, y= -2.5, label = "Low capacity, Low implementation", size =3.5, vjust = -1, fill = "#fc8d59", color = "white")+
 
-geom_label(x=24, y=11, label = "Low capacity, High implementation", size =3.5, vjust = -1, fill = "grey", color = "white")+
+geom_label(x=24, y=11, label = "Low capacity, High implementation", size =3.5, vjust = -1, fill = "#2c7bb6", color = "white")+
 
 theme (text = element_text(family = "Arial"))+
 xlab("logGDP") +

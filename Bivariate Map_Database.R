@@ -63,6 +63,8 @@ col.matrix <- colmat(nquantiles=10, upperleft="blue", upperright="red", bottomle
 # But let's use this simple code. You can change "nquantiles" to generate color matrices with different color schemes. For example, change it to 4 to produce a 4x4 color scheme.
 
 col.matrix <- colmat(nquantiles=10)
+col.matrix <- colmat(nquantiles=10, upperleft="#2c7bb6", upperright="#abd9e9", bottomleft="#fc8d59", bottomright="#d7191c", xlab="Climate Change Vulnerability", ylab="Climate Change Relative Search Volume")
+
 
 # Using the previous function we will both create and plot the color matrix. We'll get something like the following image. Save it, because we'll need it later.
 
