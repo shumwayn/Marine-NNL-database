@@ -474,20 +474,21 @@ ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech)) +
 ##OR##
 
 ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech))+ 
-  geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "green") +
-  geom_smooth(data = specific, method = "lm", se = FALSE, color = "green") +
+  geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "#009933") +
+  geom_smooth(data = specific, method = "lm", se = FALSE, color = "#009933") +
   geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
 
-  geom_point(data = implicit, aes(x=OHI, y = log(GDP)), size = 2, color = "red") +
+  geom_point(data = implicit, aes(x=OHI, y = log(GDP)), size = 2, color = "#33FF99") +
   
   geom_point(data = none, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
   
-  geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "blue") +
-  geom_smooth(data = explicit, method = "lm", se= FALSE, color = "blue") +
+  geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "#00CC66") +
+  geom_smooth(data = explicit, method = "lm", se= FALSE, color = "#00CC66") +
 
   xlab("Ocean Health Index") +
   ylab("logGDP") +
-  theme_classic() 
+  theme_classic() +
+  xlim(41, 100)
   
   
 
@@ -499,13 +500,13 @@ ggplot(data = Policy_Analysis,
 geom_point(data = specific, 
            aes(x=log(GDP), y = Polity2, color = "#009933"), color = "#009933", size = 2, shape = 19)+ 
 geom_text(data = specific, 
-          aes(label= COUNTRY),size = 3.5, color="black", hjust =-1, vjust = 0)+
+          aes(label= COUNTRY),size = 3.5, color="black", hjust =0, vjust = -.5)+
 geom_point(data = implicit, 
            aes(x=log(GDP), y = Polity2, color = "#33FF99"), color = "#33FF99", size = 2)+
 geom_point(data = none, 
            aes(x=log(GDP), y = Polity2, color = "grey50"), color = "grey50", size = 2)+
 geom_point(data = explicit, 
-           aes(x=log(GDP), y = Polity2, color = "00CC66"),color = "00CC66", size = 2)+
+           aes(x=log(GDP), y = Polity2, color = "#00CC66"),color = "#00CC66", size = 2)+
 
 geom_label(x=29, y=-2.5, label = "High capacity, Low implementation", size =3.5, vjust = -1, fill = "#d7191c", color = "white")+
 
