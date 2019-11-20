@@ -456,22 +456,21 @@ t3
 
 ########Plot marine specific policies vs OHI #################
 
+install.packages("reshape2")
+library(reshape2)
+
+
+
 Policy_Analysis$marine_mech = as.factor(Policy_Analysis$marine_mech)
 Implementation <- c("3"= "Marine specific", 
                     "2" = "Marine explicit",
                     "1" = "Marine Implicit", 
                     "0" = "No Policy")
 
+policy_analysis_melt <- melt(Policy_Analysis, id.vars = 'OHI', variable.name = 'logGDP', value.name = 'Policy Type')
 
-ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)+
-  xlab("Ocean Health Index") +
-  ylab("logGDP") +
-  theme_classic()+
-  labs(fill = "Policy Type", subtitle = Implementation) #not working
 
-##OR##
+
 
 ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech))+ 
   geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "#009933") +
@@ -484,6 +483,8 @@ ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech))+
   
   geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "#00CC66") +
   geom_smooth(data = explicit, method = "lm", se= FALSE, color = "#00CC66") +
+  
+  scale_fill_manual(values = Implementation)+
 
   xlab("Ocean Health Index") +
   ylab("logGDP") +
@@ -534,48 +535,39 @@ theme_classic()
 
 #Plot marine specific vs species Richness
 ```{r}
-########Plot marine specific policies vs Richness ################# edited colors so marine explicit and specific are both blue
-ggplot(data = Mar_Pol, aes (x=Richness, y = log(GDP)))+
+########Plot marine specific policies vs Richness ################# 
+#trying to label just points over
+
   
-  geom_point(data = Mar_Exp, aes(x=Richness, y = log(GDP)), size = 2, shape = 19, color = "blue") +
-  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+ggplot(data = Policy_Analysis, aes (x=Richness, y = log(GDP)))+
   
-  geom_point(data = Mar_Imp2, aes(x=Richness, y = log(GDP)), size = 2, color = "red") +
+  geom_text(aes(label = ifelse(Richness>.55, as.character(COUNTRY),'')), 
+           size = 3.5, color="grey50", hjust =0, vjust = 0) +
   
-  geom_point(data = No_mar, aes(x=Richness, y = log(GDP)), size = 2, color = "grey50") +
+  geom_point(data = explicit, aes(x=Richness, y = log(GDP)), size = 2, shape = 19, color = "#00CC66") +
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+  geom_smooth(data = explicit, method = "lm", se= FALSE, color = "#00CC66")+
+
+
+  geom_point(data = implicit, aes(x=Richness, y = log(GDP)), size = 2, color = "#33FF99") +
+
+  geom_point(data = none, aes(x=Richness, y = log(GDP)), size = 2, color = "grey50") +
   
-  geom_point(data = Mar_Pol,aes(x=Richness, y = log(GDP)), size = 2, color = "blue") +
-  geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
- 
+  geom_point(data = specific, aes(x=Richness, y = log(GDP)), size = 2, color = "#009933") +
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+  geom_smooth(data = specific, method = "lm", se= FALSE, color = "#009933") +
   
-  
-  xlab(" Species Richness") +
+  xlab(" Marine Species Richness") +
   ylab("logGDP") +
   
-  scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
-                     values = c("green", "red", "grey50", "blue")) +
-  guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
-  theme_minimal()
 
 
-ggplot(data = Mar_Pol, aes (x=log(GDP), y = Richness))+
-  geom_point(data = Mar_Pol, aes(x=log(GDP), y = Richness, size = 2, color = "blue")) +
-  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
   
-  geom_point(data = Mar_Imp2, aes(x=Richness, y = log(GDP)), size = 2, color = "pink") +
-  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
-  
-  geom_point(data = Mar_Exp, aes(x=Richness, y = log(GDP)), size = 2, color = "blue") +
-  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
-  
-  geom_point(data = No_mar, aes(x=Richness, y = log(GDP)), size = 2, color = "black") +
-  geom_text(aes(label= COUNTRY),size = 2.5, color="black") +
-  xlab("Richness") +
-  ylab("logGDP")+
-  
-  ##key not working
-  guides(color = guide_legend(title = "Policy Type")) +
+  #scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
+                    # values = c("green", "red", "grey50", "blue")) +
+  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
   theme_classic()
+
 
 ```
 
