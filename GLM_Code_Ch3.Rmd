@@ -86,7 +86,7 @@ View(cor_matrix)
 ```
 
 
-#Ordinal Logistic Regression for ALL Policies
+#Ordinal Logistic Regression for Stage vs. ALL Policies
 ```{r}
 
 #To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
@@ -130,7 +130,7 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 
 ```
 
-#Ordinal Logistic Regression for just marine Policies 1-2-3
+#Ordinal Logistic Regression for Policy implementation vs predictors
 ```{r}
 
 #To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
@@ -147,30 +147,27 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 
 ## Build ordinal logistic regression model
 
-### Stage of Policy vs. ALL values ###
+### Stage of Implementation vs. ALL values ###
 
-Just_marine <-Policy_Analysis %>% 
-  filter(marine_mech ==2 | marine_mech == 3)
 
-Just_marine$STAGE2 = factor(Just_marine$STAGE2, levels = c("0", "1", "2", "3", "4") )
+Policy_Analysis$marine_mech = factor(Policy_Analysis$marine_mech, levels = c("0", "1", "2", "3"))
 
-Marine_Stage <- polr(Just_marine$STAGE2 ~  Just_marine$mam_bird +Just_marine$EEZ_Protected +
-                      Just_marine$OHI + log(Just_marine$GDP) + 
-                      Just_marine$Polity2 + Just_marine$Richness, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness and NRR not significant
-summary(Marine_Stage) 
-coeftest(Marine_Stage)
+Implementation_Stage <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird + Policy_Analysis$EEZ_Protected + Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness and NRR not significant
+summary(Implementation_Stage) 
+coeftest(Implementation_Stage)
 
 #confidence intervals
-ci_All <- confint(Marine_Stage)
+ci_All <- confint(Implementation_Stage)
 
 
 #After building the model and interpreting the model, the next step is to evaluate it. 
   #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
 
 #Compute confusion table and misclassification error - model predicts 0,1 bette
-predictstage = predict(All_Stage,Policy_Analysis)
-table(Policy_Analysis$STAGE2, predictstage)
-mean(as.character(Policy_Analysis$STAGE2) != 
+predictstage = predict(Implementation_Stage,Policy_Analysis)
+table(Policy_Analysis$marine_mech, predictstage)
+mean(as.character(Policy_Analysis$marine_mech) != 
        as.character(predictstage))
 
 
