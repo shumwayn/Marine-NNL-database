@@ -130,6 +130,25 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 
 ```
 
+#Testing for multicollinearity - Stage  
+```{r} 
+
+#https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
+
+library(olsrr)
+
+multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
+
+ols_vif_tol(multico_model)
+View(multico_model)
+
+
+
+```
+
+
 #Ordinal Logistic Regression for Policy implementation vs predictors
 ```{r}
 
@@ -170,23 +189,22 @@ table(Policy_Analysis$marine_mech, predictstage)
 mean(as.character(Policy_Analysis$marine_mech) != 
        as.character(predictstage))
 
-
 ```
 
 
-#Testing for multicollinearity  
+#Testing for multicollinearity - Implementation  
 ```{r} 
 
 #https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
 
 library(olsrr)
 
-multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+multico_imp <- lm(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
                       Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
                       Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
 
-ols_vif_tol(multico_model)
-View(multico_model)
+ols_vif_tol(multico_imp)
+View(multico_imp)
 
 
 
