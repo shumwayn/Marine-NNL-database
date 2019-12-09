@@ -127,36 +127,8 @@ table(Policy_Analysis$STAGE2, predictstage)
 mean(as.character(Policy_Analysis$STAGE2) != 
        as.character(predictstage))
 
-#results - 42x 0 is identified correctly, 1 & 2 are never id'd correctly, 3 id'd 17x, 4 id'd correctly 6x - so good at predicting 0, 3 and 4, but not 1 and 2
 
 ```
-
-#Plotting effects
-```{r}
-
-```
-
-
-#Testing for multicollinearity - Stage  
-```{r} 
-
-#https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
-
-library(olsrr)
-
-Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
-
-multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
-                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
-                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
-
-ols_vif_tol(multico_model)
-multico_model
-
-
-
-```
-
 
 #Ordinal Logistic Regression for Policy implementation vs predictors
 ```{r}
@@ -180,10 +152,8 @@ multico_model
 
 Policy_Analysis$marine_mech = factor(Policy_Analysis$marine_mech, levels = c("0", "1", "2", "3"))
 
-Implementation_Stage <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird + Policy_Analysis$OHI + log(Policy_Analysis$GDP) + Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness, EEZ and NRR not significant
-
-
-
+Implementation_Stage <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird + Policy_Analysis$EEZ_Protected + Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness and NRR not significant
 summary(Implementation_Stage) 
 coeftest(Implementation_Stage)
 
@@ -200,22 +170,23 @@ table(Policy_Analysis$marine_mech, predictstage)
 mean(as.character(Policy_Analysis$marine_mech) != 
        as.character(predictstage))
 
+
 ```
 
 
-#Testing for multicollinearity - Implementation  
+#Testing for multicollinearity  
 ```{r} 
 
 #https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
 
 library(olsrr)
 
-multico_imp <- lm(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
                       Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
                       Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
 
-ols_vif_tol(multico_imp)
-View(multico_imp)
+ols_vif_tol(multico_model)
+View(multico_model)
 
 
 
