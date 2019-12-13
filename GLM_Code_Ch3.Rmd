@@ -163,6 +163,8 @@ multico_model
 
 #To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
 
+#https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/
+
 #Dividing data into training and test set
 #Random sampling
 #samplesize = .60*nrow(Policy_data)
@@ -182,14 +184,20 @@ Policy_Analysis$marine_mech = factor(Policy_Analysis$marine_mech, levels = c("0"
 
 Implementation_Stage <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird + Policy_Analysis$OHI + log(Policy_Analysis$GDP) + Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness, EEZ and NRR not significant
 
-
-
 summary(Implementation_Stage) 
 coeftest(Implementation_Stage)
 
 #confidence intervals
-ci_All <- confint(Implementation_Stage)
+ci_imp <-confint(Implementation_Stage)
+ci_imp
 
+#Breakdown by factor
+risk <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird, data = Policy_Analysis, Hess = TRUE)
+summary(risk) 
+coeftest(risk)
+
+ci_risk <-confint(risk)
+ci_risk
 
 #After building the model and interpreting the model, the next step is to evaluate it. 
   #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
@@ -202,6 +210,45 @@ mean(as.character(Policy_Analysis$marine_mech) !=
 
 ```
 
+#Plots
+```{r}
+
+risk <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(mam_bird))) +
+  geom_boxplot(size = .75) +
+  geom_jitter(alpha = .5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+risk
+
+health <-ggplot(Policy_Analysis, aes(x = marine_mech, y = OHI)) +
+  geom_boxplot(size = .75) +
+  geom_jitter(alpha = .5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+health
+
+wealth <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(GDP))) +
+  geom_boxplot(size = .75) +
+  geom_jitter(alpha = .5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+wealth
+
+polity <- ggplot(Policy_Analysis, aes(x = marine_mech, y = Polity2)) +
+  geom_boxplot(size = .75) +
+  geom_jitter(alpha = .5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+polity
+```
+
+
+# convert the coefficients into odds ratios
+```{r} 
+
+exp(coef(Implementation_Stage))
+
+#To get the Odds ratio (OR) and confidence intervals, we just exponentiate the estimates and confidence intervals
+
+exp(cbind(OR = coef(Implementation_Stage), ci_imp))
+
+```
 
 #Testing for multicollinearity - Implementation  
 ```{r} 
@@ -222,6 +269,13 @@ View(multico_imp)
 ```
 
 
+```{r}
+#Plotting the effects 
+library("effects")
+Effect(focal.predictors = "mam_bird",Implementation_Stage)
+plot(Effect(focal.predictors = "OHI",Implementation_Stage))
+plot(Effect(focal.predictors = c("mam_bird", "OHI"),Implementation_Stage))
+```
 
 ##Stage of Policy vs Poltical values
 ```{r}
