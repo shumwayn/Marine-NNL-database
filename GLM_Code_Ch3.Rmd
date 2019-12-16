@@ -41,12 +41,19 @@ library(lsr)
 ```
 
 
-##Load Data
+##Load Data - work computer
 ```{r }
+
 
 Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
 
 
+```
+
+#Load data - laptop
+```{r }
+
+Policy_Analysis <- read.csv("~/Desktop/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
 ```
 
 #Summary Information
@@ -69,9 +76,7 @@ summary(focus$Focus)
 ```
 
 #Correlation Matrix - ALL DATA
-
 ```{r}
-
 head(Policy_Analysis)
 Policy_data <- Policy_Analysis[,11:length(Policy_Analysis)] ## makes a new dataframe from policy analysis, subsets everything to the right of presence/absence
 View(Policy_data)
@@ -80,8 +85,6 @@ View(Policy_data)
 round(cor(Policy_data, use = "na.or.complete"),2) ##rounds the date two decimal places for clarity
 cor_matrix <- cor(Policy_data, use="pairwise.complete.obs", method = c("spearman"))   
 View(cor_matrix)
-
-
 
 ```
 
@@ -191,14 +194,6 @@ coeftest(Implementation_Stage)
 ci_imp <-confint(Implementation_Stage)
 ci_imp
 
-#Breakdown by factor
-risk <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird, data = Policy_Analysis, Hess = TRUE)
-summary(risk) 
-coeftest(risk)
-
-ci_risk <-confint(risk)
-ci_risk
-
 #After building the model and interpreting the model, the next step is to evaluate it. 
   #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
 
@@ -209,6 +204,49 @@ mean(as.character(Policy_Analysis$marine_mech) !=
        as.character(predictstage))
 
 ```
+
+#Ordinal regression by factor - Redlist birds/mammals
+```{r}
+risk <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird, data = Policy_Analysis, Hess = TRUE)
+summary(risk) 
+coeftest(risk)
+
+ci_risk <-confint(risk)
+ci_risk
+```
+
+
+
+#Ordinal regression by factor - Ocean Health Index
+```{r}
+health <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$OHI, data = Policy_Analysis, Hess = TRUE)
+summary(health) 
+coeftest(health)
+
+ci_risk <-confint(health)
+ci_risk
+```
+
+#Ordinal regression by factor - GDP
+```{r}
+wealth <- polr(Policy_Analysis$marine_mech ~  log(Policy_Analysis$GDP), data = Policy_Analysis, Hess = TRUE)
+summary(wealth) 
+coeftest(wealth)
+
+ci_risk <-confint(wealth)
+ci_risk
+```
+
+#Ordinal regression by factor - Polity2
+```{r}
+politics <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE)
+summary(politics) 
+coeftest(politics)
+
+ci_risk <-confint(politics)
+ci_risk
+```
+
 
 #Plots
 ```{r}
