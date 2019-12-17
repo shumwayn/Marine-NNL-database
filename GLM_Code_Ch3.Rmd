@@ -19,6 +19,8 @@ install.packages("effects")
 install.packages("ggrepel")
 install.packages("extrafont")
 install.packages("lsr")
+install.packages("gridExtra")
+install.packages("ggpubr")
 ```
 
 
@@ -37,7 +39,8 @@ library(effects)
 library(ggrepel)
 library(extrafont)
 library(lsr)
-
+library(gridExtra)
+library(ggpubr)
 ```
 
 
@@ -320,7 +323,9 @@ polity <- ggplot(Policy_Analysis, aes(x = marine_mech, y = Polity2)) +
   theme_classic()
 polity
  
-
+ggarrange(risk, wealth, health, polity, + rremove("x.text")
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2)
 ```
 
 
