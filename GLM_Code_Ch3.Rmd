@@ -273,59 +273,69 @@ group_names <- c('0' = "none",
 
 risk_palette=c("grey50","#33FF99", "#00CC66", "#009933")
 
-risk <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(mam_bird))) +
+risk1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(mam_bird))) +
   geom_boxplot(aes(fill = marine_mech), size = .75)+ 
   geom_jitter() +
   scale_fill_manual(values=risk_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
-  xlab("Implementation mechanism") +
+  xlab("") +
   ylab("Red list birds & mammals")+
   scale_x_discrete(labels = group_names)+ 
   #ggtitle("Odds") +
   theme_classic()
-risk 
+risk <- risk1 + theme(legend.position = "none")
+risk
 
 
-
-health <-ggplot(Policy_Analysis, aes(x = marine_mech, y = OHI)) +
+health1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = OHI)) +
   geom_boxplot(aes(fill = marine_mech), size = .75)+ 
   geom_jitter() +
   scale_fill_manual(values=risk_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
-  xlab("Implementation mechanism") +
-  ylab("Ocean health Index")+
+  xlab("") +
+  ylab("Ocean health index")+
   scale_x_discrete(labels = group_names)+ 
   #ggtitle("Odds") +
   theme_classic() 
+health <- health1 + theme(legend.position = "none")
 health
 
-wealth <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(GDP))) +
+wealth1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(GDP))) +
   geom_boxplot(aes(fill = marine_mech), size = .75)+ 
   geom_jitter() +
   scale_fill_manual(values=risk_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
-  xlab("Implementation mechanism") +
+  xlab("") +
   ylab("log(GDP)")+
   scale_x_discrete(labels = group_names)+ 
   #ggtitle("Odds") +
   theme_classic()
-wealth
+wealth <- wealth1 + theme(legend.position = "none")
+weath
 
-polity <- ggplot(Policy_Analysis, aes(x = marine_mech, y = Polity2)) +
+polity1 <- ggplot(Policy_Analysis, aes(x = marine_mech, y = Polity2)) +
   geom_boxplot(aes(fill = marine_mech), size = .75)+ 
   geom_jitter() +
   scale_fill_manual(values=risk_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
-  xlab("Implementation mechanism") +
+  xlab("") +
   ylab("Polity2")+
   scale_x_discrete(labels = group_names)+ 
   #ggtitle("Odds") +
   theme_classic()
+polity <- polity1 + theme(legend.position = "none")
 polity
  
-ggarrange(risk, wealth, health, polity, + rremove("x.text")
+mech_plot <- ggarrange(risk, wealth, health, polity,
           labels = c("A", "B", "C", "D"),
           ncol = 2, nrow = 2)
+
+Figure1 <- annotate_figure(mech_plot,
+                           bottom = text_grob("Implementation mechanism",     
+                                              color= "black", face = "bold", 
+                                              size = 14))
+
+Figure1
 ```
 
 
