@@ -239,11 +239,11 @@ ci_risk
 
 #Ordinal regression by factor - Polity2
 ```{r}
-politics <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE)
-summary(politics) 
-coeftest(politics)
+polity <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE)
+summary(polity) 
+coeftest(polity)
 
-ci_risk <-confint(politics)
+ci_risk <-confint(polity)
 ci_risk
 ```
 
@@ -251,30 +251,75 @@ ci_risk
 #Plots
 ```{r}
 
+specific <- Policy_Analysis %>% 
+  filter (marine_mech == 3)
+
+explicit <- Policy_Analysis %>% 
+  filter (marine_mech == 2)
+
+implicit <- Policy_Analysis %>% 
+  filter (marine_mech == 1)
+
+none <- Policy_Analysis %>% 
+  filter (marine_mech == 0)
+
+group_names <- c('0' = "none",
+                 '1' = "implicit",
+                 '2' = "explicit",
+                 '3' = "specific")
+
+risk_palette=c("grey50","#33FF99", "#00CC66", "#009933")
+
 risk <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(mam_bird))) +
-  geom_boxplot(size = .75) +
-  geom_jitter(alpha = .5) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
+  geom_jitter() +
+  scale_fill_manual(values=risk_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("Implementation mechanism") +
+  ylab("Red list birds & mammals")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
 risk 
 
+
+
 health <-ggplot(Policy_Analysis, aes(x = marine_mech, y = OHI)) +
-  geom_boxplot(size = .75) +
-  geom_jitter(alpha = .5) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) 
+  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
+  geom_jitter() +
+  scale_fill_manual(values=risk_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("Implementation mechanism") +
+  ylab("Ocean health Index")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic() 
 health
 
 wealth <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(GDP))) +
-  geom_boxplot(size = .75) +
-  geom_jitter(alpha = .5) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
+  geom_jitter() +
+  scale_fill_manual(values=risk_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("Implementation mechanism") +
+  ylab("log(GDP)")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
 wealth
 
 polity <- ggplot(Policy_Analysis, aes(x = marine_mech, y = Polity2)) +
-  geom_boxplot(size = .75) +
-  geom_jitter(alpha = .5) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
+  geom_jitter() +
+  scale_fill_manual(values=risk_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("Implementation mechanism") +
+  ylab("Polity2")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
 polity
-
+ 
 
 ```
 
@@ -465,7 +510,6 @@ View(sum_exp)
 ```
 
 #Summary stats for marine policies as tables
-
 ```{r}
 
 ggplot(Policy_Analysis, aes(x = marine_mech)) +
