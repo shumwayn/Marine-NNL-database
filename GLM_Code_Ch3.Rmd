@@ -21,6 +21,7 @@ install.packages("extrafont")
 install.packages("lsr")
 install.packages("gridExtra")
 install.packages("ggpubr")
+install.packages("ggsignif")
 ```
 
 
@@ -41,6 +42,7 @@ library(extrafont)
 library(lsr)
 library(gridExtra)
 library(ggpubr)
+library(ggsignif)
 ```
 
 
@@ -283,7 +285,9 @@ risk1 <- Policy_Analysis %>%
   ylab("Red list birds & mammals")+
   scale_x_discrete(labels = group_names)+ 
   #ggtitle("Odds") +
-  theme_classic()
+  theme_classic()+
+  geom_signif(comparisons = list(c("none", "implicit", "explicit", "specific")), 
+              map_signif_level=TRUE)
 risk <- risk1 + theme(legend.position = "none")
 risk
 
@@ -352,8 +356,8 @@ stage_names <- c('0' = "none",
                  '4' = "established")
 
 stage_risk1 <-ggplot(Policy_Analysis, aes(x = STAGE2, y = log(mam_bird))) +
-  geom_boxplot(aes(fill = STAGE2), size = .75)+ 
-  geom_jitter() +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5)  +
   #scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -366,8 +370,8 @@ stage_risk
 
 
 stage_EEZ1 <-ggplot(Policy_Analysis, aes(x = STAGE2, y = log(EEZ_Protected))) +
-  geom_boxplot(aes(fill = STAGE2), size = .75)+ 
-  geom_jitter() +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  ggeom_point(position = "jitter", size =.5) +
   #scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -378,8 +382,8 @@ stage_EEZ <- stage_EEZ1 + theme(legend.position = "none")
 stage_EEZ
 
 stage_health1 <-ggplot(Policy_Analysis, aes(x = STAGE2, y = log(GDP))) +
-  geom_boxplot(aes(fill = STAGE2), size = .75)+ 
-  geom_jitter() +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
   #scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -391,8 +395,8 @@ stage_health <- stage_health1 + theme(legend.position = "none")
 stage_health
 
 stage_gdp1 <- ggplot(Policy_Analysis, aes(x = STAGE2, y = log(GDP))) +
-  geom_boxplot(aes(fill = STAGE2), size = .75)+ 
-  geom_jitter() +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
   #scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -404,8 +408,8 @@ stage_gdp <-stage_gdp1 + theme(legend.position = "none")
 stage_gdp
 
 stage_polity1 <- ggplot(Policy_Analysis, aes(x = STAGE2, y = Polity2)) +
-  geom_boxplot(aes(fill = STAGE2), size = .75)+ 
-  geom_jitter() +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
   #scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
