@@ -273,9 +273,10 @@ group_names <- c('0' = "none",
 
 color_palette=c("grey50","#33FF99", "#00CC66", "#009933")
 
-risk1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(mam_bird))) +
-  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
-  geom_jitter() +
+risk1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = log(mam_bird))) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
   scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -287,9 +288,10 @@ risk <- risk1 + theme(legend.position = "none")
 risk
 
 
-health1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = OHI)) +
-  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
-  geom_jitter() +
+health1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = OHI)) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
   scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -300,9 +302,10 @@ health1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = OHI)) +
 health <- health1 + theme(legend.position = "none")
 health
 
-wealth1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(GDP))) +
-  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
-  geom_jitter() +
+wealth1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = log(GDP))) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
   scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -311,11 +314,12 @@ wealth1 <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(GDP))) +
   #ggtitle("Odds") +
   theme_classic()
 wealth <- wealth1 + theme(legend.position = "none")
-weath
+wealth
 
-polity1 <- ggplot(Policy_Analysis, aes(x = marine_mech, y = Polity2)) +
-  geom_boxplot(aes(fill = marine_mech), size = .75)+ 
-  geom_jitter() +
+polity1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = Polity2)) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
   scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
