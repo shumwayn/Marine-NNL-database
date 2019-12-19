@@ -93,7 +93,6 @@ View(cor_matrix)
 
 ```
 
-
 #Ordinal Logistic Regression for Stage vs. ALL Policies
 ```{r}
 
@@ -139,10 +138,62 @@ mean(as.character(Policy_Analysis$STAGE2) !=
 
 ```
 
-#Plotting effects
+
+#Stage vs all variables - Indiv variables
 ```{r}
 
+stage_risk <- polr(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird, data = Policy_Analysis, Hess = TRUE)
+summary(stage_risk) 
+coeftest(stage_risk)
+ci_stage_risk <-confint(stage_risk)
+ci_stage_risk
+
+
+EEZ_stage <- polr(Policy_Analysis$STAGE2 ~  Policy_Analysis$EEZ_Protected, data = Policy_Analysis, Hess = TRUE)
+summary(EEZ_stage) 
+coeftest(EEZ_stage)
+ci_EEZ_stage <-confint(EEZ_stage)
+ci_EEZ_stage
+
+
+
+OHI_stage <- polr(Policy_Analysis$STAGE2 ~  Policy_Analysis$OHI, data = Policy_Analysis, Hess = TRUE)
+summary(OHI_stage) 
+coeftest(OHI_stage)
+ci_OHI_stage <-confint(OHI_stage)
+ci_OHI_stage
+
+
+GDP_stage <- polr(Policy_Analysis$STAGE2 ~  log(Policy_Analysis$GDP), data = Policy_Analysis, Hess = TRUE)
+summary(GDP_stage) 
+coeftest(GDP_stage)
+ci_GDP_stage <-confint(GDP_stage)
+ci_GDP_stage
+
+
+
+Polity_stage <- polr(Policy_Analysis$STAGE2 ~  log(Policy_Analysis$Polity2), data = Policy_Analysis, Hess = TRUE)
+summary(Polity_stage) 
+coeftest(Polity_stage)
+Polity_stage <-confint(Polity_stage)
+Polity_stage
+
+
 ```
+
+
+
+# convert the coefficients into odds ratios
+```{r} 
+
+exp(coef(All_Stage))
+
+#To get the Odds ratio (OR) and confidence intervals, we just exponentiate the estimates and confidence intervals
+
+exp(cbind(OR = coef(All_Stage), ci_All))
+
+```
+
 
 
 #Testing for multicollinearity - Stage  
@@ -161,9 +212,8 @@ multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_A
 ols_vif_tol(multico_model)
 multico_model
 
-
-
 ```
+
 
 
 #Ordinal Logistic Regression for Policy implementation vs predictors
@@ -190,7 +240,7 @@ multico_model
 
 Policy_Analysis$marine_mech = factor(Policy_Analysis$marine_mech, levels = c("0", "1", "2", "3"))
 
-Implementation_Stage <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird + Policy_Analysis$OHI + log(Policy_Analysis$GDP) + Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness, EEZ and NRR not significant
+Implementation_Stage <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird + Policy_Analysis$OHI + log(Policy_Analysis$GDP) + Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness, EEZ and NRR not significant within the model
 
 summary(Implementation_Stage) 
 coeftest(Implementation_Stage)
@@ -210,6 +260,76 @@ mean(as.character(Policy_Analysis$marine_mech) !=
 
 ```
 
+
+# convert the coefficients into odds ratios
+```{r} 
+
+exp(coef(Implementation_Stage))
+
+#To get the Odds ratio (OR) and confidence intervals, we just exponentiate the estimates and confidence intervals
+
+exp(cbind(OR = coef(Implementation_Stage), ci_imp))
+
+```
+
+
+
+#Testing for multicollinearity - Implementation  
+```{r} 
+
+#https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
+
+library(olsrr)
+
+multico_imp <- lm(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
+
+ols_vif_tol(multico_imp)
+View(multico_imp)
+
+```
+
+
+
+#Ordinal regression by factor - mech~Rents
+```{r}
+rent <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$Rents, data = Policy_Analysis, Hess = TRUE)
+summary(rent) 
+coeftest(rent)
+
+ci_rent <-confint(rent)
+ci_rent
+```
+
+
+
+#Ordinal regression by factor - richness
+```{r}
+
+EEZ_ord <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$EEZ_Protected, data = Policy_Analysis, Hess = TRUE)
+summary(EEZ_ord) 
+coeftest(EEZ_ord)
+
+ci_EEZ_ord <-confint(EEZ_ord)
+ci_EEZ_ord
+```
+
+
+
+
+#Ordinal regression by factor - richness
+```{r}
+rich <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$Richness, data = Policy_Analysis, Hess = TRUE)
+summary(rich) 
+coeftest(rich)
+
+ci_rich <-confint(rich)
+ci_rich
+```
+
+
+
 #Ordinal regression by factor - Redlist birds/mammals
 ```{r}
 risk <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird, data = Policy_Analysis, Hess = TRUE)
@@ -219,7 +339,6 @@ coeftest(risk)
 ci_risk <-confint(risk)
 ci_risk
 ```
-
 
 
 #Ordinal regression by factor - Ocean Health Index
@@ -251,7 +370,6 @@ coeftest(polity)
 ci_risk <-confint(polity)
 ci_risk
 ```
-
 
 #Plotting marine mech vs variables - Figure 1
 ```{r}
@@ -371,7 +489,7 @@ stage_risk
 
 stage_EEZ1 <-ggplot(Policy_Analysis, aes(x = STAGE2, y = log(EEZ_Protected))) +
   geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
-  ggeom_point(position = "jitter", size =.5) +
+  geom_point(position = "jitter", size = .5) +
   #scale_fill_manual(values=color_palette) + # Boxplot fill color
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
   xlab("") +
@@ -422,42 +540,14 @@ stage_polity
  
 stage_plot <- ggarrange(stage_risk, stage_EEZ, stage_health, stage_gdp, stage_polity,
           labels = c("A", "B", "C", "D", "E"),
-          ncol = 2, nrow = 3)
+          ncol = 2, nrow = 3, hjust = -5, vjust = 1)
 
-Figure2 <- annotate_figure(stage_plot, bottom = text_grob("Stage of Implementation", color= "black", face = "bold", size = 14))
+Figure2 <- annotate_figure(stage_plot, bottom = text_grob("Stage of Implementation", color= "black", face = "bold", size = 14, vjust = -1))
 
 Figure2
 ```
 
 
-# convert the coefficients into odds ratios
-```{r} 
-
-exp(coef(Implementation_Stage))
-
-#To get the Odds ratio (OR) and confidence intervals, we just exponentiate the estimates and confidence intervals
-
-exp(cbind(OR = coef(Implementation_Stage), ci_imp))
-
-```
-
-#Testing for multicollinearity - Implementation  
-```{r} 
-
-#https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
-
-library(olsrr)
-
-multico_imp <- lm(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
-                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
-                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
-
-ols_vif_tol(multico_imp)
-View(multico_imp)
-
-
-
-```
 
 
 ```{r}
@@ -499,6 +589,7 @@ coeftest(Policy_Stage)
 
 
 ```
+
 
 #Marine specific variables
 ```{r}
