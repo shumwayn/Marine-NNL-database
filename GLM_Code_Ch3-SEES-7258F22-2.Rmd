@@ -1,0 +1,950 @@
+---
+title: "GLM NNL Database"
+author: "Nicole Shumway"
+date: "19 August 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+#Install packages
+```{r}
+install.packages("Hmisc")
+install.packages("MASS")
+install.packages("AER")
+install.packages("ggplot2")
+install.packages("tidyverse")
+install.packages("RColorBrewer")
+install.packages("effects")
+install.packages("ggrepel")
+install.packages("extrafont")
+install.packages("lsr")
+install.packages("gridExtra")
+install.packages("ggpubr")
+install.packages("ggsignif")
+```
+
+
+
+#Load packages
+```{r setup}
+
+
+library(Hmisc)
+library(MASS)
+library(AER)
+library(ggplot2)
+library(tidyverse)
+library(RColorBrewer)
+library(effects)
+library(ggrepel)
+library(extrafont)
+library(lsr)
+library(gridExtra)
+library(ggpubr)
+library(ggsignif)
+```
+
+
+##Load Data - work computer
+```{r }
+
+
+Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
+
+
+```
+
+#Load data - laptop
+```{r }
+
+Policy_Analysis <- read.csv("~/Desktop/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
+```
+
+#Summary Information
+```{r}
+
+summary(offsets_db$Scale)
+
+scale <- offsets_db %>% 
+  filter(Implicit_Explicit == "Explicit")
+summary(scale$Scale)
+
+regions <- offsets_db %>% 
+  filter(Implicit_Explicit == "Explicit")
+
+summary(regions$Region)
+
+focus <- offsets_db %>% 
+  filter(Implicit_Explicit == "Explicit")
+summary(focus$Focus)
+```
+
+#Correlation Matrix - ALL DATA
+```{r}
+head(Policy_Analysis)
+Policy_data <- Policy_Analysis[,11:length(Policy_Analysis)] ## makes a new dataframe from policy analysis, subsets everything to the right of presence/absence
+View(Policy_data)
+
+
+round(cor(Policy_data, use = "na.or.complete"),2) ##rounds the date two decimal places for clarity
+cor_matrix <- cor(Policy_data, use="pairwise.complete.obs", method = c("spearman"))   
+View(cor_matrix)
+
+```
+
+
+#Ordinal Logistic Regression for Stage vs. ALL Policies
+```{r}
+
+#To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
+
+#Dividing data into training and test set
+#Random sampling
+#samplesize = .60*nrow(Policy_data)
+#index = sample(seq_len(nrow(Policy_data)), size = samplesize)
+#Creating training and test set 
+#datatrain <- Policy_Analysis[index,]
+#datatest <- Policy_Analysis[-index,]
+
+
+
+## Build ordinal logistic regression model
+
+### Stage of Policy vs. ALL values ###
+
+
+Policy_Analysis$STAGE2 = factor(Policy_Analysis$STAGE2, levels = c("0", "1", "2", "3", "4") )
+
+All_Stage <- polr(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness and NRR not significant
+summary(All_Stage) 
+coeftest(All_Stage)
+
+#confidence intervals
+ci_All <- confint(All_Stage)
+
+
+#After building the model and interpreting the model, the next step is to evaluate it. 
+  #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
+
+#Compute confusion table and misclassification error - model predicts 0,1 bette
+predictstage = predict(All_Stage,Policy_Analysis)
+table(Policy_Analysis$STAGE2, predictstage)
+mean(as.character(Policy_Analysis$STAGE2) != 
+       as.character(predictstage))
+
+#results - 42x 0 is identified correctly, 1 & 2 are never id'd correctly, 3 id'd 17x, 4 id'd correctly 6x - so good at predicting 0, 3 and 4, but not 1 and 2
+
+```
+
+#Plotting effects
+```{r}
+
+```
+
+
+#Testing for multicollinearity - Stage  
+```{r} 
+
+#https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
+
+library(olsrr)
+
+Policy_Analysis <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Policy_Analysis.csv")
+
+multico_model <- lm(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
+
+ols_vif_tol(multico_model)
+multico_model
+
+
+
+```
+
+
+#Ordinal Logistic Regression for Policy implementation vs predictors
+```{r}
+
+#To describe or predict variables. OLR can id which variables predict the level of involvement in offsets policy
+
+#https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/
+
+#Dividing data into training and test set
+#Random sampling
+#samplesize = .60*nrow(Policy_data)
+#index = sample(seq_len(nrow(Policy_data)), size = samplesize)
+#Creating training and test set 
+#datatrain <- Policy_Analysis[index,]
+#datatest <- Policy_Analysis[-index,]
+
+
+
+## Build ordinal logistic regression model
+
+### Stage of Implementation vs. ALL values ###
+
+
+Policy_Analysis$marine_mech = factor(Policy_Analysis$marine_mech, levels = c("0", "1", "2", "3"))
+
+Implementation_Stage <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird + Policy_Analysis$OHI + log(Policy_Analysis$GDP) + Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness, EEZ and NRR not significant
+
+summary(Implementation_Stage) 
+coeftest(Implementation_Stage)
+
+#confidence intervals
+ci_imp <-confint(Implementation_Stage)
+ci_imp
+
+#After building the model and interpreting the model, the next step is to evaluate it. 
+  #The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
+
+#Compute confusion table and misclassification error - model predicts 0,1 bette
+predictstage = predict(Implementation_Stage,Policy_Analysis)
+table(Policy_Analysis$marine_mech, predictstage)
+mean(as.character(Policy_Analysis$marine_mech) != 
+       as.character(predictstage))
+
+```
+
+#Ordinal regression by factor - Redlist birds/mammals
+```{r}
+risk <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird, data = Policy_Analysis, Hess = TRUE)
+summary(risk) 
+coeftest(risk)
+
+ci_risk <-confint(risk)
+ci_risk
+```
+
+
+
+#Ordinal regression by factor - Ocean Health Index
+```{r}
+health <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$OHI, data = Policy_Analysis, Hess = TRUE)
+summary(health) 
+coeftest(health)
+
+ci_risk <-confint(health)
+ci_risk
+```
+
+#Ordinal regression by factor - GDP
+```{r}
+wealth <- polr(Policy_Analysis$marine_mech ~  log(Policy_Analysis$GDP), data = Policy_Analysis, Hess = TRUE)
+summary(wealth) 
+coeftest(wealth)
+
+ci_risk <-confint(wealth)
+ci_risk
+```
+
+#Ordinal regression by factor - Polity2
+```{r}
+polity <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE)
+summary(polity) 
+coeftest(polity)
+
+ci_risk <-confint(polity)
+ci_risk
+```
+
+
+#Plotting marine mech vs variables - Figure 1
+```{r}
+
+<<<<<<< HEAD
+risk <-ggplot(Policy_Analysis, aes(x = marine_mech, y = log(mam_bird))) +
+  geom_boxplot(size = .75) +
+  geom_jitter(alpha = .5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+risk 
+
+health <-ggplot(Policy_Analysis, aes(x = marine_mech, y = OHI)) +
+  geom_boxplot(size = .75) +
+  geom_jitter(alpha = .5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) 
+=======
+specific <- Policy_Analysis %>% 
+  filter (marine_mech == 3)
+
+explicit <- Policy_Analysis %>% 
+  filter (marine_mech == 2)
+
+implicit <- Policy_Analysis %>% 
+  filter (marine_mech == 1)
+
+none <- Policy_Analysis %>% 
+  filter (marine_mech == 0)
+
+group_names <- c('0' = "none",
+                 '1' = "implicit",
+                 '2' = "explicit",
+                 '3' = "specific")
+
+color_palette=c("grey50","#33FF99", "#00CC66", "#009933")
+
+risk1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = log(mam_bird))) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
+  scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("Red list birds & mammals")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()+
+  geom_signif(comparisons = list(c("none", "implicit", "explicit", "specific")), 
+              map_signif_level=TRUE)
+risk <- risk1 + theme(legend.position = "none")
+risk
+
+
+health1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = OHI)) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
+  scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("Ocean health index")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic() 
+health <- health1 + theme(legend.position = "none")
+>>>>>>> 5d0c02ea9a3d3c9bd2645b0f89610702c1710b10
+health
+
+wealth1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = log(GDP))) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
+  scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("log(GDP)")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
+wealth <- wealth1 + theme(legend.position = "none")
+wealth
+
+polity1 <- Policy_Analysis %>% 
+  ggplot(aes(x = marine_mech, y = Polity2)) +
+  geom_boxplot(aes(fill = marine_mech), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
+  scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("Polity2")+
+  scale_x_discrete(labels = group_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
+polity <- polity1 + theme(legend.position = "none")
+polity
+<<<<<<< HEAD
+
+
+=======
+ 
+mech_plot <- ggarrange(risk, wealth, health, polity,
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2)
+
+Figure1 <- annotate_figure(mech_plot,
+                           bottom = text_grob("Implementation mechanism",     
+                                              color= "black", face = "bold", 
+                                              size = 14))
+
+Figure1
+```
+
+# Stage of Implementation vs variables - Figure 2
+```{r}
+
+stage_names <- c('0' = "none",
+                 '1' = "potential",
+                 '2' = "preliminary",
+                 '3' = "in progress",
+                 '4' = "established")
+
+stage_risk1 <-ggplot(Policy_Analysis, aes(x = STAGE2, y = log(mam_bird))) +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5)  +
+  #scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("Red list species")+
+  scale_x_discrete(labels = stage_names)+ 
+  theme_classic()
+
+stage_risk <- stage_risk1 + theme(legend.position = "none")
+stage_risk
+
+
+stage_EEZ1 <-ggplot(Policy_Analysis, aes(x = STAGE2, y = log(EEZ_Protected))) +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  ggeom_point(position = "jitter", size =.5) +
+  #scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("EEZ Protected")+
+  scale_x_discrete(labels = stage_names)+ 
+  theme_classic() 
+stage_EEZ <- stage_EEZ1 + theme(legend.position = "none")
+stage_EEZ
+
+stage_health1 <-ggplot(Policy_Analysis, aes(x = STAGE2, y = log(GDP))) +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
+  #scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("EEZ Protected")+
+  scale_x_discrete(labels = stage_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
+stage_health <- stage_health1 + theme(legend.position = "none")
+stage_health
+
+stage_gdp1 <- ggplot(Policy_Analysis, aes(x = STAGE2, y = log(GDP))) +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
+  #scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("log(GDP)")+
+  scale_x_discrete(labels = stage_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
+stage_gdp <-stage_gdp1 + theme(legend.position = "none")
+stage_gdp
+
+stage_polity1 <- ggplot(Policy_Analysis, aes(x = STAGE2, y = Polity2)) +
+  geom_boxplot(aes(fill = STAGE2), size = .75, outlier.shape = NA)+ 
+  geom_point(position = "jitter", size =.5) +
+  #scale_fill_manual(values=color_palette) + # Boxplot fill color
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  xlab("") +
+  ylab("Polity2")+
+  scale_x_discrete(labels = stage_names)+ 
+  #ggtitle("Odds") +
+  theme_classic()
+stage_polity <-stage_polity1 + theme(legend.position = "none")
+stage_polity
+ 
+stage_plot <- ggarrange(stage_risk, stage_EEZ, stage_health, stage_gdp, stage_polity,
+          labels = c("A", "B", "C", "D", "E"),
+          ncol = 2, nrow = 3)
+
+Figure2 <- annotate_figure(stage_plot, bottom = text_grob("Stage of Implementation", color= "black", face = "bold", size = 14))
+
+Figure2
+>>>>>>> 5d0c02ea9a3d3c9bd2645b0f89610702c1710b10
+```
+
+
+# convert the coefficients into odds ratios
+```{r} 
+
+exp(coef(Implementation_Stage))
+
+#To get the Odds ratio (OR) and confidence intervals, we just exponentiate the estimates and confidence intervals
+
+exp(cbind(OR = coef(Implementation_Stage), ci_imp))
+
+```
+
+#Testing for multicollinearity - Implementation  
+```{r} 
+
+#https://cran.r-project.org/web/packages/olsrr/vignettes/regression_diagnostics.html
+
+library(olsrr)
+
+multico_imp <- lm(Policy_Analysis$marine_mech ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
+                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis)
+
+ols_vif_tol(multico_imp)
+View(multico_imp)
+
+
+
+```
+
+
+```{r}
+#Plotting the effects 
+library("effects")
+Effect(focal.predictors = "mam_bird",Implementation_Stage)
+plot(Effect(focal.predictors = "OHI",Implementation_Stage))
+plot(Effect(focal.predictors = c("mam_bird", "OHI"),Implementation_Stage))
+```
+
+##Stage of Policy vs Poltical values
+```{r}
+
+
+#For predicting
+#Dividing data into training and test set
+#Random sampling
+##samplesize = .60*nrow(Policy_Analysis)
+##index = sample(seq_len(nrow(Policy_Analysis)), size = samplesize)
+#Creating training and test set 
+##datatrain <- Policy_Analysis[index,]
+##datatest <- Policy_Analysis[-index,]
+
+Policy_Analysis$STAGE2 = factor(Policy_Analysis$STAGE2, levels = c("0", "1", "2", "3", "4") )
+
+Policy_Stage <- polr(STAGE2 ~  log(GDP) + Polity2, data = Policy_Analysis, Hess = TRUE)
+
+summary(Policy_Stage)
+coeftest(Policy_Stage)
+
+#After building the model and interpreting the model, the next step is to evaluate it. 
+#The evaluation of the model is conducted on the test dataset. A basic evaluation approach is to compute the confusion matrix and the misclassification error. 
+
+#For predicting
+#Compute confusion table and misclassification error - model predicts lo
+#predictstage2 = predict(Policy_Stage,Policy_Analysis)
+#table(Policy_Analysis$STAGE2, predictstage2)
+#mean(as.character(Policy_Analysis$STAGE2) != as.character(predictstage2))
+
+
+```
+
+#Marine specific variables
+```{r}
+
+## Marine Specific Policies ####
+SubN_Pol <- Policy_Analysis %>%   ## Subsets marine specific subnational policies
+  filter(Mar_subN == 3)
+Nat_Pol <- Policy_Analysis %>%   ##subsets marine specific national policies
+  filter(Mar_Nat ==3)
+Org_Pol <- Policy_Analysis %>% 
+  filter(Mar_org ==3)
+
+marine_nat <- full_join(Nat_Pol, SubN_Pol)  #### joins the two together, all marine specific policies
+marine_specific <- full_join(marine_nat, Org_Pol)
+
+### Policies that are not marine specific, but include marine explicitly ####
+Sub_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+  filter(Mar_subN == 2)
+Nat_exp <-Policy_Analysis %>%   ## Subsets marine explicit subnational policies
+  filter(Mar_Nat == 2)
+Org_exp <- Policy_Analysis %>% 
+  filter(Mar_org == 2)
+
+marine_nat2 <- full_join(Sub_exp, Nat_exp)
+marine_explicit <- full_join(marine_nat2, Org_exp)
+
+
+## Policies that include marine implicitly ###
+
+marine_implicit <- Policy_Analysis %>% 
+  filter(Mar_subN == 1 | Mar_Nat == 1 |Mar_supraN == 1 | Mar_org == 1)
+
+Sub_imp <-Policy_Analysis %>%   ## Subsets marine implicit subnational policies
+  filter(Mar_subN == 1 )
+Nat_imp <-Policy_Analysis %>%   ## Subsets marine implicit national policies
+  filter(Mar_Nat == 1)
+Supr_imp <- Policy_Analysis %>%   ## Subsets marine implicit supra-national policies
+ filter(Mar_supraN == 1)
+Mar_Imp <- full_join (Sub_imp, Nat_imp)
+marine_implicit2 <- full_join (Mar_Imp, Supr_imp)  ##all marine implicit policies
+
+
+#as.factor(MarinePol$STAGE2)
+
+#marine_inclusive <- full_join(marine_specific, marine_explicit)  ### Includes marine considered explicitly and implicitly
+
+#All_marine <- full_join(marine_inclusive, marine_specific) ## Include all marine policies, no matter how included
+
+## Policies that don't include marine at all
+No_mar <- Policy_Analysis %>%   #Subsets no policies
+  filter(Presence_Absence == 0)
+
+
+```
+
+#Marine Policies from offsets database
+```{r}
+#load data
+offsets_db <- read.csv("C:/Users/uqnshumw/OneDrive - The University of Queensland/Documents/Git/Marine-NNL-database/Offsets by country.csv", comment.char="#")
+
+sp_policy <- offsets_db %>% 
+  filter(Marine.Specific == "Yes")
+
+
+#Filter db by marine specific policies
+
+#filters by country
+specific <- Policy_Analysis %>% 
+  filter(marine_mech == "3")
+
+
+#filters by country (n=36)
+
+specific_explicit <- Policy_Analysis %>% 
+  filter(marine_mech == "2" | marine_mech == "3")
+
+explicit <- Policy_Analysis %>% 
+  filter(marine_mech == "2")
+
+##Implicit policies
+implicit <- Policy_Analysis %>% 
+  filter(marine_mech == "1")
+
+none <- Policy_Analysis %>% 
+  filter(marine_mech == "0")
+
+
+##group implicit to all explicit policies - this gives you 90 policies, how many countries though?
+#ALL <- offsets_db %>% 
+  #filter(Implicit_Explicit == "Explicit"| Implicit_Explicit == "Implicit")
+
+# this subsets by the number of disctinct countries n=71 (added one)
+by_country2 <- ALL %>% 
+  distinct(Country, .keep_all = FALSE) 
+
+```
+
+
+#By type of policy
+```{r}
+
+#marine specific policies focus on Biodiversity (n=4), Mangrove or Seagrass (n=3), marine ecosystems (n=2), Fish (n=1)
+summary(specific$Focus)
+
+#marine explicit policies
+policy_type_exp <-offsets_db %>% 
+  filter(Marine.Specific == "No") %>% 
+  filter(marine.included == "Yes") %>% 
+  filter(Implicit_Explicit == "Explicit")
+
+##marine explicit policies focus on Biodiversity (n=23), Wetlands or Mangroves (n=11), Coastal or marine environments (n=8), Fish
+sum_exp <-summary(policy_type_exp$Focus)
+
+View(sum_exp)
+```
+
+#Summary stats for marine policies as tables
+```{r}
+
+ggplot(Policy_Analysis, aes(x = marine_mech)) +
+  geom_bar(stat = 'count') +
+  theme(axis.text.x = element_text(angle = 45, size = 7.5, hjust = 1)) +
+  xlab("Policy Type") +
+  ylab("Number of countries") +
+  labs(fill = "Mine Type")+
+  facet_wrap(~, labeller = as_labeller(marine_names))
+  
+
+#Makes a vector with mine type names
+marine_names <- c('0' = "No policy",
+                 '1' = "Marine implicit",
+                 '2' = "Marine explicit",
+                 '3' = "Marine specific") 
+
+grid.table(for_table)
+
+```
+
+##Subset variables for analysis
+```{r}
+
+Var_subset <- Policy_Analysis %>% 
+  select(marine_mech, Richness, GDP, EEZ_Protected, OHI, mam_bird, Rents, Polity2)
+
+
+Offset_subset <- offsets_db %>% 
+  select(Country, Region, Marine.Specific, Implicit_Explicit, Focus, Year, Stage)
+  
+
+```
+
+
+#Plotting
+
+## Marine Specific vs OHI
+```{r}
+
+########Plot marine specific policies vs OHI #################
+
+install.packages("reshape2")
+library(reshape2)
+
+
+
+Policy_Analysis$marine_mech = as.factor(Policy_Analysis$marine_mech)
+Implementation <- c("3"= "Marine specific", 
+                    "2" = "Marine explicit",
+                    "1" = "Marine Implicit", 
+                    "0" = "No Policy")
+
+policy_analysis_melt <- melt(Policy_Analysis, id.vars = 'OHI', variable.name = 'logGDP', value.name = 'Policy Type')
+
+
+
+
+ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech))+ 
+  geom_point(data = specific, aes(x=OHI, y = log(GDP)), size = 2, shape = 19, color = "#009933") +
+  geom_smooth(data = specific, method = "lm", se = FALSE, color = "#009933") +
+  geom_text(data = specific, aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+
+  geom_point(data = implicit, aes(x=OHI, y = log(GDP)), size = 2, color = "#33FF99") +
+  
+  geom_point(data = none, aes(x=OHI, y = log(GDP)), size = 2, color = "grey50") +
+  
+  geom_point(data = explicit,aes(x=OHI, y = log(GDP)), size = 2, color = "#00CC66") +
+  geom_smooth(data = explicit, method = "lm", se= FALSE, color = "#00CC66") +
+  
+  scale_fill_manual(values = Implementation)+
+
+  xlab("Ocean Health Index") +
+  ylab("logGDP") +
+  theme_classic() +
+  xlim(41, 100)
+  
+  
+
+
+## Polity 2 vs GDP
+  
+ggplot(data = Policy_Analysis,
+       aes (x=log(GDP), y = Polity2, color = marine_mech)) +
+geom_point(data = specific, 
+           aes(x=log(GDP), y = Polity2, color = "#009933"), color = "#009933", size = 2, shape = 19)+ 
+geom_text(data = specific, 
+          aes(label= COUNTRY),size = 3.5, color="black", hjust =0, vjust = -.5)+
+geom_point(data = implicit, 
+           aes(x=log(GDP), y = Polity2, color = "#33FF99"), color = "#33FF99", size = 2)+
+geom_point(data = none, 
+           aes(x=log(GDP), y = Polity2, color = "grey50"), color = "grey50", size = 2)+
+geom_point(data = explicit, 
+           aes(x=log(GDP), y = Polity2, color = "#00CC66"),color = "#00CC66", size = 2)+
+
+geom_label(x=29, y=-2.5, label = "High capacity, Low implementation", size =3.5, vjust = -1, fill = "#d7191c", color = "white")+
+
+geom_label(x=29, y=11, label = "High capacity, High implementation", size =3.5, vjust = -1, fill = "#abd9e9", color = "white")+
+
+geom_label(x=24, y= -2.5, label = "Low capacity, Low implementation", size =3.5, vjust = -1, fill = "#fc8d59", color = "white")+
+
+geom_label(x=24, y=11, label = "Low capacity, High implementation", size =3.5, vjust = -1, fill = "#2c7bb6", color = "white")+
+
+theme (text = element_text(family = "Arial"))+
+xlab("logGDP") +
+ylab("Polity2") +
+ylim(-10, 13)+
+xlim (22,31)+
+geom_hline (yintercept = 0, color = "black") +
+geom_vline(xintercept = 27, color = "black") +
+theme_classic()
+  #scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
+                     #values = c("green", "red", "grey50", "blue")) +
+  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
+  
+
+
+```
+
+#Plot marine specific vs species Richness
+```{r}
+########Plot marine specific policies vs Richness ################# 
+#trying to label just points over
+
+  
+ggplot(data = Policy_Analysis, aes (x=Richness, y = log(GDP)))+
+  
+  geom_text(aes(label = ifelse(Richness>.55, as.character(COUNTRY),'')), 
+           size = 3.5, color="grey50", hjust =0, vjust = 0) +
+  
+  geom_point(data = explicit, aes(x=Richness, y = log(GDP)), size = 2, shape = 19, color = "#00CC66") +
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+  geom_smooth(data = explicit, method = "lm", se= FALSE, color = "#00CC66")+
+
+
+  geom_point(data = implicit, aes(x=Richness, y = log(GDP)), size = 2, color = "#33FF99") +
+
+  geom_point(data = none, aes(x=Richness, y = log(GDP)), size = 2, color = "grey50") +
+  
+  geom_point(data = specific, aes(x=Richness, y = log(GDP)), size = 2, color = "#009933") +
+  #geom_text(aes(label= COUNTRY),size = 3.5, color="black", hjust =1, vjust = .5) +
+  geom_smooth(data = specific, method = "lm", se= FALSE, color = "#009933") +
+  
+  xlab(" Marine Species Richness") +
+  ylab("logGDP") +
+  
+
+
+  
+  #scale_color_manual("Policy Type", limits = c("Marine Explicit", "Marine Implicit", "No Policy", "Marine Specific"), 
+                    # values = c("green", "red", "grey50", "blue")) +
+  #guides(colour = guide_legend(override.aes = list(pch = c(16,21), fill = c("green", "red", "grey50", "blue"))))+
+  theme_classic()
+
+
+```
+
+
+##Plotting the effects
+```{r}
+
+## this isn't working - getting log(GDP) predictor is not in the model?
+library("effects")
+Effect(focal.predictors = "log(GDP)",Policy_Stage)
+plot(Effect(focal.predictors = "log(GDP)",Policy_Stage))
+plot(Effect(focal.predictors = c("log(GDP)", "Polity2)",Policy_Stage)))
+
+###
+
+
+```
+
+
+##Plot
+```{r}
+
+boxplot(Policy_Analysis$STAGE ~ Policy_Analysis$EEZ_Protected + Policy_Analysis$Polity2 + Policy_Analysis$GDP + Policy_Analysis$OHI, data = Policy_Analysis, main = "Stage vs Variables", xlab="Variables", ylab= "Stage")
+
+boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$STAGE, data = Policy_Analysis, id.n=TRUE, main = "Polity2 Index vs Stage", xlab="Stage", ylab= "Polity2 score")
+```
+
+
+##plot
+
+```{r}
+
+### GLM of OHI ### Why signigican in Policy model but not here?
+
+OHI_Model <- glm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$OHI, family = binomial, data = Policy_Analysis)
+summary (OHI_Model)
+plot(OHI_Model)
+boxplot(Policy_Analysis$OHI ~ Policy_Analysis$STAGE, data = Policy_Analysis, main = "Stage vs OHI", xlab="stage", ylab= "OHI")
+
+##########
+Model2 <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2 + Policy_Analysis$GDP + Policy_Analysis$NRR + Policy_Analysis$OHI + Policy_Analysis$Land_Protected, data = Policy_Analysis)
+summary(Model2)
+
+######
+Polity_model <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2, data = Policy_Analysis)
+summary (Polity_model)
+plot(Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2, data = Policy_Analysis)
+abline(Polity_model)
+
+### lm of country vs. % EEZ Protected ####
+fit2 <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$EEZ_Protected, data = Policy_Analysis)
+summary (fit2)
+plot(Policy_Analysis$Presence_Absence ~ Policy_Analysis$EEZ_Protected, data = Policy_Analysis)
+abline(fit2)
+
+### plotting interactions ######
+Int1 <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2*Policy_Analysis$OHI, data = Policy_Analysis)
+summary(Int1)
+
+Int2 <- lm(formula = Policy_Analysis$Presence_Absence ~ Policy_Analysis$Polity2*Policy_Analysis$Species_risk, data = Policy_Analysis)
+summary(Int2)
+interaction.plot(Policy_Analysis$Presence_Absence, Policy_Analysis$Polity2, Policy_Analysis$Species_risk)
+
+```
+
+
+
+#Plots
+##Load packages
+```{r}
+
+
+
+```
+
+
+```{r}
+#### Boxplot of Presence/Absence vs. Polity 2 - Y axis first then x (response)
+
+names <- c('1' = "Policy present",
+           '2' = "Policy absent")
+
+ggplot(aes(Policy_Analysis, x = Presence_Absense, y = Polity2)) +
+  geom_boxplot()+
+  labs(x = "Policy",
+       y = "Polity2 Score") +
+  theme_minimal()
+  
+  #facet_wrap(~, labeller = as_labeller(names))
+
+boxplot(Policy_Analysis$Polity2 ~ Policy_Analysis$Presence_Absence, data = Policy_Analysis, main = "Polity2 Index", xlab="Policy", ylab= "Polity2 score") +
+  
+
+boxplot(log(Policy_Analysis$GDP) ~ Polity_Analysis$Presence_Absence, data = Policy_Analysis, main = "Presence vs GDP", xlab="Presence", ylab= "log(GDP)")
+
+boxplot(log(Policy_Analysis$EEZ_Protected) ~ Polity_Analysis$Presence_Absence, data = Policy_Analysis, main = "Presence vs EEZ", xlab="Presence", ylab= "log(EEZ)")
+
+boxplot(Policy_Analysis$Richness ~ Policy_Analysis$STAGE, ylim= c(0,1), data = Policy_Analysis, main = "STAGE vs Richness", xlab="Stage", ylab= "Richness")
+
+#############GOOD SAMPLE CODE##############
+#ggplot(Var_subset, aes(reorder(GDP,),Mileage,fill=Country))+
+# ggplot(tyre, aes(Brands,Mileage,fill=Brands))+ # if you want to leave them alphabetic
+  geom_jitter(colour = "dark gray",width=.1) +
+  stat_boxplot(geom ='errorbar',width = 0.4) +
+  geom_boxplot()+
+  labs(title="Boxplot, dotplot and SEM plot of mileage for four brands of tyres", 
+       x = "Brands (sorted)",
+       y = "Mileage (in thousands)",
+       subtitle ="Gray dots=sample data points, Black dot=outlier, Blue dot=mean, Red=99% confidence interval",
+       caption = "Data from https://datascienceplus.com/one-way-anova-in-r/") +
+  guides(fill=FALSE) +
+  stat_summary(fun.data = "mean_cl_normal", colour = "red", size = 1.5, fun.args = list(conf.int=.99)) +
+  stat_summary(geom="point", fun.y=mean, color="blue") +
+  theme_bw()
+
+
+
+
+### plotting stage vs GDP - cut into quartiles
+plot(Policy_Analysis$STAGE ~ log(Policy_Analysis$GDP), data = Policy_Analysis)
+grid(2,2)
+identify(log(Policy_Analysis$GDP), Policy_Analysis$STAGE, labels = row.names (Policy_Analysis$GI), plot = TRUE, tolerance = .25) #not working
+
+
+plot(Policy_Analysis$Polity2~ log(Policy_Analysis$GDP), data = Policy_Analysis)
+grid(2,2)
+
+##ggplot
+library("ggplot2")
+library("scales")
+
+
+
+#Policy_Analysis$GDP = as.numeric(levels(Policy_Analysis$GDP))[Policy_Analysis$GDP]
+
+Policy_Analysis$Presence_Absence<-as.factor(Policy_Analysis$Presence_Absence) #force group to be a factor
+Policy_Analysis$GDP <-as.integer(Policy_Analysis$GDP)
+
+ggplot(data=Policy_Analysis, aes(x=log(GDP), y=Polity2, color = Policy_Analysis$Presence_Absence)) + 
+  geom_point(size = 3) +
+  xlab("logGDP") +
+  ylab("Polity 2 Score") +
+  theme_minimal() + xlim(20,31) +
+  guides(color = guide_legend(title = "Policy Presence")) +
+  geom_hline(data = Policy_Analysis, aes(yintercept = as.numeric(0)), color= "gray") +
+  geom_vline(data = Policy_Analysis, aes(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red")) #code for quartile not working
+##+ panel.grid.major = element_line(colour = "firebrick", size = 4) - not working
+
+#geom_vline(xintercept = as.numeric(median(log(Policy_Analysis$GDP))), color = "red"))
+
+#3d Scatter plot
+
+library(scatterplot3d)
+attach(Policy_Analysis)
+scatterplot3d(Policy_Analysis$STAGE, Policy_Analysis$GDP, Policy_Analysis$Polity2, main = "3D Scatterplot")
+
+
+```
+
+

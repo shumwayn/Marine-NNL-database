@@ -26,7 +26,7 @@ install.packages("ggsignif")
 
 
 
-#Load packages
+#Load packages----
 ```{r setup}
 
 
@@ -46,7 +46,7 @@ library(ggsignif)
 ```
 
 
-##Load Data - work computer
+##Load Data ---- work computer
 ```{r }
 
 
@@ -106,7 +106,7 @@ View(cor_matrix)
 #datatrain <- Policy_Analysis[index,]
 #datatest <- Policy_Analysis[-index,]
 
-
+#for complete separation problem:https://stats.stackexchange.com/questions/11109/how-to-deal-with-perfect-separation-in-logistic-regression
 
 ## Build ordinal logistic regression model
 
@@ -115,9 +115,8 @@ View(cor_matrix)
 
 Policy_Analysis$STAGE2 = factor(Policy_Analysis$STAGE2, levels = c("0", "1", "2", "3", "4") )
 
-All_Stage <- polr(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected +
-                      Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
-                      Policy_Analysis$Polity2 + Policy_Analysis$Richness, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness and NRR not significant
+All_Stage <- polr(Policy_Analysis$STAGE2 ~  Policy_Analysis$mam_bird +Policy_Analysis$EEZ_Protected *Policy_Analysis$OHI + log(Policy_Analysis$GDP) + 
+                      Policy_Analysis$Polity2, data = Policy_Analysis, Hess = TRUE) ##DRopped Richness and NRR not significant
 summary(All_Stage) 
 coeftest(All_Stage)
 
@@ -195,7 +194,6 @@ exp(cbind(OR = coef(All_Stage), ci_All))
 ```
 
 
-
 #Testing for multicollinearity - Stage  
 ```{r} 
 
@@ -214,6 +212,15 @@ multico_model
 
 ```
 
+
+
+#Plotting the effects _ All_Stage
+```{r}
+ar <- profile(All_Stage)
+plot(ar)
+pairs(ar)
+
+```
 
 
 #Ordinal Logistic Regression for Policy implementation vs predictors
@@ -304,7 +311,7 @@ ci_rent
 
 
 
-#Ordinal regression by factor - richness
+#Ordinal regression by factor - EEZ
 ```{r}
 
 EEZ_ord <- polr(Policy_Analysis$marine_mech ~  Policy_Analysis$EEZ_Protected, data = Policy_Analysis, Hess = TRUE)
@@ -326,6 +333,12 @@ coeftest(rich)
 
 ci_rich <-confint(rich)
 ci_rich
+
+exp(coef(rich))
+
+#To get the Odds ratio (OR) and confidence intervals, we just exponentiate the estimates and confidence intervals
+
+exp(cbind(OR = coef(rich), ci_rich))
 ```
 
 
@@ -370,6 +383,17 @@ coeftest(polity)
 ci_risk <-confint(polity)
 ci_risk
 ```
+
+#Plotting the effects
+```{r}
+
+install.packages("effects")
+library(effects)
+
+Effect(focal.predictors = c("marine_mech","mam_bird"), Implementation_Stage)
+
+```
+
 
 #Plotting marine mech vs variables - Figure 1
 ```{r}
@@ -457,7 +481,7 @@ mech_plot <- ggarrange(risk, wealth, health, polity,
           ncol = 2, nrow = 2)
 
 Figure1 <- annotate_figure(mech_plot,
-                           bottom = text_grob("Implementation mechanism",     
+                           bottom = text_grob("Inclusion mechanism",     
                                               color= "black", face = "bold", 
                                               size = 14))
 
