@@ -393,7 +393,7 @@ Effect(focal.predictors = c("marine_mech","mam_bird"), Implementation_Stage)
 ```
 
 
-#Plotting marine mech vs variables ---- Figure 1
+#Plotting marine mech vs variables ---- Figure 2
 ```{r}
 
 specific <- Policy_Analysis %>% 
@@ -503,7 +503,7 @@ Figure1 <- annotate_figure(mech_plot,
 Figure1
 ```
 
-# Stage of Implementation vs variables - Figure 2
+# Stage of Implementation vs variables - Figure 3
 ```{r}
 
 stage_names <- c('0' = "none",
@@ -820,7 +820,7 @@ ggplot(data = Policy_Analysis, aes (x=OHI, y = log(GDP), color = marine_mech))+
 ```
 
 
-## Polity 2 vs GDP plot ---- Figure 4
+## Polity 2 vs GDP plot ---- Figure 1
 ```{r}
 
 #install.packages("ggrepel")
